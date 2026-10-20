@@ -67,12 +67,13 @@ ctl browser screenshot --path "$EV/analysis/results.png" [--full]
 |---|---|
 | `start [--lang pt-BR]` | launch headless Chromium for this run (Playwright headless shell; the full Chromium build lacks system libraries here). `--lang` sets the UI language and `Accept-Language` for the whole run |
 | `goto <path>` | navigate; `--wait-ready false` skips the hydration wait (404 page, redirects) |
-| `click`, `fill`, `press <Key>` | user actions |
+| `click`, `fill`, `press <Key>`, `hover` | user actions |
 | `text`, `value`, `attr --attr <name>`, `url` | read what the user sees |
 | `clipboard` | read the clipboard after "Salvar e compartilhar link" |
 | `storage` | read-only list of `localStorage` keys and sizes (proves the local draft exists or was cleared) |
 | `snapshot --path f.aria.txt` | ARIA snapshot of the page or of a target |
-| `screenshot --path f.png [--viewport 390x844]` | screenshot at the specified viewport |
+| `screenshot --path f.png [--viewport 390x844]` | screenshot at the specified viewport; a target captures only that element |
+| `layout --css <selector>` | read-only dimensions, scroll width, text, opacity and chart marks |
 | `network --path f.json` | reload and record every request with its body (proves what leaves the browser) |
 
 Targets: `--role <role> --name <accessible name>` (preferred), `--label <label>`, `--text <text>`, `--testid <id>`, `--css <selector>` (last resort, e.g. `--css html` to read `data-theme`); add `--exact` for exact name match. After any action: `--wait-text`, `--wait-gone`, `--wait-url`. `--block <path>` aborts matching requests during that one command (used to force the TL;DR fallback; a failed network request is a real production condition). `--record <file.json>` saves every request (method, URL, body) made during that one command, which is how the TL;DR payload is proven. `--color-scheme light|dark` emulates the OS theme for that command. `--timeout <ms>` defaults to 10000. `--wait-text` waits for a visible match, so text inside a closed explanation does not block it. `--viewport WIDTHxHEIGHT` sets the viewport for a command.

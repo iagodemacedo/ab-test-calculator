@@ -15,7 +15,7 @@ args = parser.parse_args()
 ctl = '.claude/skills/verify-ab-test-calculator/scripts/ctl'
 run = os.environ['ABCALC_RUN_ID']
 ev = Path('artifacts/verify') / run
-for feature in ('analysis', 'pretest', 'share', 'locale-theme', 'tldr'):
+for feature in ('analysis', 'pretest', 'share', 'locale-theme', 'tldr', 'round2'):
     (ev / feature).mkdir(parents=True, exist_ok=True)
 log = (ev / 'commands.jsonl').open('a')
 results = {}
@@ -226,7 +226,55 @@ def locale_theme():
             if current != theme: click('button', 'Alternar tema')
             for viewport in ('1440x1000', '390x844'):
                 shot('locale-theme', f'{tab}-{theme}-{viewport}', viewport)
+                if tab == 'analysis':
+                    for chart in ('rate', 'lift'):
+                        title = 'Distribuições das CRs' if chart == 'rate' else 'Distribuição do lift'
+                        browser('screenshot', '--css', f'figure:has(> h3:text-is("{title}"))', '--path', str(ev / 'locale-theme' / f'{chart}-{theme}-{viewport}.png'), '--viewport', viewport)
     browser('screenshot', '--path', str(ev / 'locale-theme' / 'pretest-desktop-final.png'), '--viewport', '1440x1000')
+
+
+def round2():
+    fixture()
+    browser('screenshot', '--path', str(ev / 'round2' / 'desktop.png'), '--viewport', '1440x1000')
+    layout = browser('layout', '--css', '.group-scroll')
+    check(layout['scrollWidth'] <= layout['clientWidth'], layout)
+    hero = browser('text', '--css', '.stat.hero .stat-value')['text']
+    check(re.fullmatch(r'95,[0-9]%', hero) is not None, hero)
+    values('round2', 'layout', json.dumps(layout, ensure_ascii=False))
+    for title in ('Distribuições das CRs', 'Distribuição do lift'):
+        selector = f'figure:has(> h3:text-is("{title}"))'
+        chart = browser('layout', '--css', selector)
+        check(chart['shadedAreas'] > 0, chart)
+        browser('hover', '--css', selector + ' [role="slider"]')
+        browser('press', 'ArrowRight', '--css', selector + ' [role="slider"]')
+        check('Variante B' in browser('text', '--css', selector + ' .chart-tooltip')['text'], 'Tooltip must include the variant density')
+        browser('snapshot', '--css', selector, '--path', str(ev / 'round2' / f'{"rate" if "CRs" in title else "lift"}-hover.aria.txt'))
+        for viewport in ('1440x1000', '390x844'):
+            browser('screenshot', '--css', selector, '--path', str(ev / 'round2' / f'{"rate" if "CRs" in title else "lift"}-{viewport}.png'), '--viewport', viewport)
+        browser('click', '--css', selector + ' button', '--wait-text', 'ver gráfico')
+        table = browser('text', '--role', 'table', '--name', title, '--exact')['text']
+        check(('Intervalo da CR' if 'CRs' in title else 'Área acima de 0') in table, table)
+        values('round2', title, table)
+        browser('click', '--css', selector + ' button')
+    click('button', 'Adicionar variante')
+    click('button', 'Adicionar variante')
+    fill('Usuários (Variante D)', 80000)
+    fill('Conversões (Variante D)', 1500)
+    fill('Usuários (Variante C)', 100)
+    fill('Conversões (Variante C)', 101)
+    result = text()
+    check('Variante B' in result and 'Variante D' in result and 'grupos completos' in result, result)
+    invalid = browser('text', '--role', 'row', '--name', 'Variante C')['text']
+    check('não podem superar' in invalid and invalid.count('—') >= 3, invalid)
+    snap('round2', 'partial-invalid')
+    click('button', 'Remover Variante C')
+    marker = browser('attr', '--css', '.group-name:has(input[aria-label="Nome do grupo D"]) .series-marker', '--attr', 'style')['value']
+    check('--series-4' in marker, marker)
+    chart = browser('layout', '--css', 'figure.density-chart')
+    check('var(--series-4)' in chart['colors'], chart)
+    click('radio', 'Z test')
+    snap('round2', 'noncontiguous-ztest')
+    click('button', 'Limpar')
 
 
 def tldr():
@@ -251,10 +299,25 @@ def tldr():
     generated = text('TL;DR')
     check('Possível Sample Ratio Mismatch' in generated and 'Crítico' in generated, generated)
     values('tldr', 'generated', generated)
+    summary = browser('text', '--css', '.tldr-text')['text']
+    sentences = [part for part in re.split(r'[.!?]+(?:\s|$)', summary) if part.strip()]
+    check(2 <= len(sentences) <= 4, f'Summary sentence count {len(sentences)}: {summary}')
     snap('tldr', 'generated', 'TL;DR')
+    aria = (ev / 'tldr' / 'generated.aria.txt').read_text()
+    ai_findings = [line for line in aria.splitlines() if 'heading' in line and 'apontado pela IA' in line]
+    check(all('Crítico' not in line and ('Atenção' in line or 'Info' in line) for line in ai_findings), ai_findings)
+    values('tldr', 'severity', json.dumps(ai_findings, ensure_ascii=False))
+    results['tldr-severity'] = {'status': 'PASS', 'ai_findings': len(ai_findings)}
     shot('tldr', 'generated')
     fill('Conversões (Variante B)', 1001, '--wait-text', 'Dados mudaram')
     snap('tldr', 'stale', 'TL;DR')
+    dimmed = browser('layout', '--css', '.stale-content')
+    check(dimmed['opacity'] == '0.4', dimmed)
+    check('Gerar de novo' in text('TL;DR') and summary in text('TL;DR'), 'Stale summary not retained')
+    results['tldr-stale'] = {'status': 'PASS'}
+    fill('Conversões (Variante B)', 1000)
+    click('button', 'Adicionar variante', '--wait-text', 'Dados mudaram')
+    snap('tldr', 'stale-incomplete-group', 'TL;DR')
     payloads = json.loads((ev / 'tldr' / 'requests.json').read_text())
     check(all('#s=' not in request['url'] for request in payloads), 'Fragment in TLDR request URL')
     request = next(request for request in payloads if request['method'] == 'POST' and '/api/tldr' in request['url'])
@@ -264,7 +327,7 @@ def tldr():
 
 try:
     command('doctor')
-    for name, fn in [('analysis', analysis), ('pretest', pretest), ('share-and-draft', share), ('locale-theme', locale_theme), ('tldr', tldr)]: journey(name, fn)
+    for name, fn in [('analysis', analysis), ('round2', round2), ('pretest', pretest), ('share-and-draft', share), ('locale-theme', locale_theme), ('tldr', tldr)]: journey(name, fn)
 finally:
     (ev / 'journeys.json').write_text(json.dumps(results, ensure_ascii=False, indent=2))
     log.close()

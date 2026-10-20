@@ -144,7 +144,7 @@ def revenue():
     result = text()
     check('$' in result and '41.142,86' in result, result)
     snapshot('revenue-usd')
-    browser('click', '--css', 'figure.chart-frame button')
+    browser('click', '--css', 'figure.chart-frame:has(> h3:text-is("Intervalos do lift")) button')
     snapshot('interval-table')
     browser('click', '--css', 'figure.chart-frame:last-of-type button')
     snapshot('revenue-table')
