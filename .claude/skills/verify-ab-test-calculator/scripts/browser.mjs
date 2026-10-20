@@ -105,6 +105,11 @@ async function withPage(fn) {
     await context.grantPermissions(["clipboard-read", "clipboard-write"], APP_URL ? { origin: new URL(APP_URL).origin } : undefined).catch(() => {});
     const page = context.pages()[0] ?? (await context.newPage());
     page.setDefaultTimeout(timeout);
+    if (flags.viewport) {
+      const match = /^(\d+)x(\d+)$/.exec(flags.viewport);
+      if (!match) throw new Error('--viewport must be WIDTHxHEIGHT');
+      await page.setViewportSize({ width: Number(match[1]), height: Number(match[2]) });
+    }
     if (flags.block) {
       await page.route(`**${flags.block}*`, (route) => route.abort("failed"));
     }
