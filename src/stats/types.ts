@@ -22,6 +22,18 @@ export interface Settings {
 /** Slot order is identity: A is always the control, B..E the variants, and slot N owns chart color N. */
 export type GroupId = "A" | "B" | "C" | "D" | "E";
 export const GROUP_IDS: readonly GroupId[] = ["A", "B", "C", "D", "E"];
+
+/** The slots in use: A first, then 1 to 4 of B..E in increasing order. Removing C while D stays sends A, B, D. */
+export function isGroupIdSequence(ids: readonly unknown[]): ids is readonly GroupId[] {
+  if (ids.length < 2 || ids.length > GROUP_IDS.length || ids[0] !== "A") return false;
+  let previous = 0;
+  for (const id of ids.slice(1)) {
+    const slot = GROUP_IDS.findIndex((g) => g === id);
+    if (slot <= previous) return false;
+    previous = slot;
+  }
+  return true;
+}
 export type GroupCount = 2 | 3 | 4 | 5;
 
 /** Fraction in (0, 1]. Branded so a percentage (e.g. 100) can never be passed where a fraction is expected. */
@@ -123,7 +135,7 @@ export type Sequential =
 export interface AnalysisInput {
   days: number | null; // null when not informed
   trafficShare: Fraction;
-  groups: GroupData[]; // index 0 is the control; length 2..5
+  groups: GroupData[]; // index 0 is the control (A); ids satisfy isGroupIdSequence
   intendedSplit: Fraction[]; // same length as groups, sums to 1
   method: Method;
   sequential: Sequential;
