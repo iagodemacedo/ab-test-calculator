@@ -1,0 +1,1334 @@
+{
+  "analysis": [
+    {
+      "alpha": 0.05,
+      "extraDays": 1,
+      "input": {
+        "days": 14,
+        "groups": [
+          {
+            "conversions": 1600,
+            "users": 80000
+          },
+          {
+            "conversions": 1696,
+            "users": 80000
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": [
+          150.0,
+          6
+        ],
+        "sequential": null,
+        "trafficShare": 0.5
+      },
+      "name": "two-group",
+      "probabilityToBeBestControl": 0.04556392804,
+      "rates": [
+        0.02,
+        0.0212
+      ],
+      "revenue": {
+        "forecastLastMonth": [
+          12342857.14,
+          13083428.57
+        ],
+        "monthlyVisitors": 685714.2857,
+        "perVariant": [
+          {
+            "extraMonthlyConversions": 822.8571429,
+            "horizonImpact": 740571.4286,
+            "monthlyContribution": 123428.5714
+          }
+        ]
+      },
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.0012,
+          "achievedMde": 0.1004351341,
+          "ciAbsolute": [
+            -0.0001919636069,
+            0.002591963607
+          ],
+          "credibleIntervalRelative": [
+            -0.009280316489,
+            0.1341236938
+          ],
+          "expectedLossAbsolute": 1.332916703e-05,
+          "id": "B",
+          "lift": 0.06,
+          "observedPower": 0.3934663926,
+          "pValue": 0.09109143113,
+          "probabilityToBeBest": 0.954436072,
+          "probabilityToBeatControl": 0.954436072,
+          "requiredSamplePerVariant": 80682,
+          "significant": false,
+          "verdictBayes": "winner",
+          "verdictZ": "underpowered",
+          "z": 1.6896683
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 0,
+      "input": {
+        "days": 14,
+        "groups": [
+          {
+            "conversions": 1600,
+            "users": 80000
+          },
+          {
+            "conversions": 1696,
+            "users": 80000
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": null,
+        "trafficShare": 1.0
+      },
+      "name": "two-group-one-sided",
+      "probabilityToBeBestControl": 0.04556392804,
+      "rates": [
+        0.02,
+        0.0212
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "one-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.0012,
+          "achievedMde": 0.08889880215,
+          "ciAbsolute": [
+            3.182731651e-05,
+            null
+          ],
+          "credibleIntervalRelative": [
+            -0.009280316489,
+            0.1341236938
+          ],
+          "expectedLossAbsolute": 1.332916703e-05,
+          "id": "B",
+          "lift": 0.06,
+          "observedPower": 0.5178724853,
+          "pValue": 0.04554571557,
+          "probabilityToBeBest": 0.954436072,
+          "probabilityToBeatControl": 0.954436072,
+          "requiredSamplePerVariant": 63553,
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "winner",
+          "z": 1.6896683
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 10,
+      "input": {
+        "days": 14,
+        "groups": [
+          {
+            "conversions": 1000,
+            "users": 50000
+          },
+          {
+            "conversions": 1000,
+            "users": 48500
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": null,
+        "trafficShare": 1.0
+      },
+      "name": "srm",
+      "probabilityToBeBestControl": 0.2456187954,
+      "rates": [
+        0.02,
+        0.0206185567
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 22.84263959,
+        "pValue": 1.758213587e-06
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.000618556701,
+          "achievedMde": 0.1298716897,
+          "ciAbsolute": [
+            -0.001143623602,
+            0.002380737004
+          ],
+          "credibleIntervalRelative": [
+            -0.05472594421,
+            0.1243408561
+          ],
+          "expectedLossAbsolute": 0.000131000541,
+          "id": "B",
+          "lift": 0.03092783505,
+          "observedPower": 0.1016898133,
+          "pValue": 0.4914639282,
+          "probabilityToBeBest": 0.7543812046,
+          "probabilityToBeatControl": 0.7543812046,
+          "requiredSamplePerVariant": 80682,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": 0.6879822992
+        }
+      ]
+    },
+    {
+      "alpha": 0.025,
+      "extraDays": 82,
+      "input": {
+        "days": 21,
+        "groups": [
+          {
+            "conversions": 400,
+            "users": 20000
+          },
+          {
+            "conversions": 460,
+            "users": 20000
+          },
+          {
+            "conversions": 430,
+            "users": 20000
+          }
+        ],
+        "intendedSplit": [
+          0.3333333333,
+          0.3333333333,
+          0.3333333333
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": null,
+        "trafficShare": 1.0
+      },
+      "name": "three-group-bonferroni",
+      "probabilityToBeBestControl": 0.0112747805,
+      "rates": [
+        0.02,
+        0.023,
+        0.0215
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.003,
+          "achievedMde": 0.2274827068,
+          "ciAbsolute": [
+            -0.0002508453961,
+            0.006250845396
+          ],
+          "credibleIntervalRelative": [
+            0.007297212897,
+            0.312904629
+          ],
+          "expectedLossAbsolute": 1.026468639e-05,
+          "id": "B",
+          "lift": 0.15,
+          "observedPower": 0.4313439328,
+          "pValue": 0.0385978137,
+          "probabilityToBeBest": 0.8371640215,
+          "probabilityToBeatControl": 0.980670117,
+          "requiredSamplePerVariant": 97706,
+          "significant": false,
+          "verdictBayes": "winner",
+          "verdictZ": "underpowered",
+          "z": 2.068449084
+        },
+        {
+          "absoluteDiff": 0.0015,
+          "achievedMde": 0.2274827068,
+          "ciAbsolute": [
+            -0.001694991635,
+            0.004694991635
+          ],
+          "credibleIntervalRelative": [
+            -0.06044114811,
+            0.2299579943
+          ],
+          "expectedLossAbsolute": 0.0001076424617,
+          "id": "C",
+          "lift": 0.075,
+          "observedPower": 0.1172005089,
+          "pValue": 0.2926598653,
+          "probabilityToBeBest": 0.1515611964,
+          "probabilityToBeatControl": 0.8535268061,
+          "requiredSamplePerVariant": 97706,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": 1.052304505
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 64,
+      "input": {
+        "days": 21,
+        "groups": [
+          {
+            "conversions": 400,
+            "users": 20000
+          },
+          {
+            "conversions": 460,
+            "users": 20000
+          },
+          {
+            "conversions": 430,
+            "users": 20000
+          }
+        ],
+        "intendedSplit": [
+          0.3333333333,
+          0.3333333333,
+          0.3333333333
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": null,
+        "trafficShare": 1.0
+      },
+      "name": "three-group-no-bonferroni",
+      "probabilityToBeBestControl": 0.0112747805,
+      "rates": [
+        0.02,
+        0.023,
+        0.0215
+      ],
+      "settings": {
+        "bonferroni": false,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.003,
+          "achievedMde": 0.2057281611,
+          "ciAbsolute": [
+            0.0001573426689,
+            0.005842657331
+          ],
+          "credibleIntervalRelative": [
+            0.007297212897,
+            0.312904629
+          ],
+          "expectedLossAbsolute": 1.026468639e-05,
+          "id": "B",
+          "lift": 0.15,
+          "observedPower": 0.5431945503,
+          "pValue": 0.0385978137,
+          "probabilityToBeBest": 0.8371640215,
+          "probabilityToBeatControl": 0.980670117,
+          "requiredSamplePerVariant": 80682,
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "winner",
+          "z": 2.068449084
+        },
+        {
+          "absoluteDiff": 0.0015,
+          "achievedMde": 0.2057281611,
+          "ciAbsolute": [
+            -0.001293816773,
+            0.004293816773
+          ],
+          "credibleIntervalRelative": [
+            -0.06044114811,
+            0.2299579943
+          ],
+          "expectedLossAbsolute": 0.0001076424617,
+          "id": "C",
+          "lift": 0.075,
+          "observedPower": 0.1820290794,
+          "pValue": 0.2926598653,
+          "probabilityToBeBest": 0.1515611964,
+          "probabilityToBeatControl": 0.8535268061,
+          "requiredSamplePerVariant": 80682,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": 1.052304505
+        }
+      ]
+    },
+    {
+      "alpha": 0.0125,
+      "extraDays": 43,
+      "input": {
+        "days": 28,
+        "groups": [
+          {
+            "conversions": 900,
+            "users": 30000
+          },
+          {
+            "conversions": 990,
+            "users": 30000
+          },
+          {
+            "conversions": 960,
+            "users": 30000
+          },
+          {
+            "conversions": 880,
+            "users": 30000
+          },
+          {
+            "conversions": 1020,
+            "users": 30000
+          }
+        ],
+        "intendedSplit": [
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.2
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": null,
+        "trafficShare": 1.0
+      },
+      "name": "five-group-bonferroni",
+      "probabilityToBeBestControl": 0.0005337677345,
+      "rates": [
+        0.03,
+        0.033,
+        0.032,
+        0.02933333333,
+        0.034
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.003,
+          "achievedMde": 0.160951382,
+          "ciAbsolute": [
+            -0.0005619241743,
+            0.006561924174
+          ],
+          "credibleIntervalRelative": [
+            0.006511434983,
+            0.2021693234
+          ],
+          "expectedLossAbsolute": 9.145209136e-06,
+          "id": "B",
+          "lift": 0.1,
+          "observedPower": 0.3467777763,
+          "pValue": 0.03540715991,
+          "probabilityToBeBest": 0.2307188446,
+          "probabilityToBeatControl": 0.9822824831,
+          "requiredSamplePerVariant": 75598,
+          "significant": false,
+          "verdictBayes": "winner",
+          "verdictZ": "underpowered",
+          "z": 2.103670953
+        },
+        {
+          "absoluteDiff": 0.002,
+          "achievedMde": 0.160951382,
+          "ciAbsolute": [
+            -0.001534525365,
+            0.005534525365
+          ],
+          "credibleIntervalRelative": [
+            -0.02465147514,
+            0.1665326615
+          ],
+          "expectedLossAbsolute": 5.044913919e-05,
+          "id": "C",
+          "lift": 0.06666666667,
+          "observedPower": 0.1390966823,
+          "pValue": 0.1575620252,
+          "probabilityToBeBest": 0.05119156058,
+          "probabilityToBeatControl": 0.9211700775,
+          "requiredSamplePerVariant": 75598,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": 1.413318744
+        },
+        {
+          "absoluteDiff": -0.0006666666667,
+          "achievedMde": 0.160951382,
+          "ciAbsolute": [
+            -0.004126774306,
+            0.002793440973
+          ],
+          "credibleIntervalRelative": [
+            -0.1077228979,
+            0.07147206014
+          ],
+          "expectedLossAbsolute": 0.0009489142961,
+          "id": "D",
+          "lift": -0.02222222222,
+          "observedPower": 0.02187558372,
+          "pValue": 0.6303470065,
+          "probabilityToBeBest": 6.609490759e-05,
+          "probabilityToBeatControl": 0.3152262653,
+          "requiredSamplePerVariant": 75598,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": -0.4812384921
+        },
+        {
+          "absoluteDiff": 0.004,
+          "achievedMde": 0.160951382,
+          "ciAbsolute": [
+            0.000410944109,
+            0.007589055891
+          ],
+          "credibleIntervalRelative": [
+            0.0376797809,
+            0.2378005815
+          ],
+          "expectedLossAbsolute": 1.156449054e-06,
+          "id": "E",
+          "lift": 0.1333333333,
+          "observedPower": 0.6125553231,
+          "pValue": 0.005374424006,
+          "probabilityToBeBest": 0.7174897262,
+          "probabilityToBeatControl": 0.9973118096,
+          "requiredSamplePerVariant": 75598,
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "winner",
+          "z": 2.783690809
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 22,
+      "input": {
+        "days": 28,
+        "groups": [
+          {
+            "conversions": 900,
+            "users": 30000
+          },
+          {
+            "conversions": 990,
+            "users": 30000
+          },
+          {
+            "conversions": 960,
+            "users": 30000
+          },
+          {
+            "conversions": 880,
+            "users": 30000
+          },
+          {
+            "conversions": 1020,
+            "users": 30000
+          }
+        ],
+        "intendedSplit": [
+          0.2,
+          0.2,
+          0.2,
+          0.2,
+          0.2
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": null,
+        "trafficShare": 1.0
+      },
+      "name": "five-group-no-bonferroni",
+      "probabilityToBeBestControl": 0.0005337677345,
+      "rates": [
+        0.03,
+        0.033,
+        0.032,
+        0.02933333333,
+        0.034
+      ],
+      "settings": {
+        "bonferroni": false,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.003,
+          "achievedMde": 0.1342235389,
+          "ciAbsolute": [
+            0.000204937424,
+            0.005795062576
+          ],
+          "credibleIntervalRelative": [
+            0.006511434983,
+            0.2021693234
+          ],
+          "expectedLossAbsolute": 9.145209136e-06,
+          "id": "B",
+          "lift": 0.1,
+          "observedPower": 0.557134066,
+          "pValue": 0.03540715991,
+          "probabilityToBeBest": 0.2307188446,
+          "probabilityToBeatControl": 0.9822824831,
+          "requiredSamplePerVariant": 53211,
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "winner",
+          "z": 2.103670953
+        },
+        {
+          "absoluteDiff": 0.002,
+          "achievedMde": 0.1342235389,
+          "ciAbsolute": [
+            -0.0007735625713,
+            0.004773562571
+          ],
+          "credibleIntervalRelative": [
+            -0.02465147514,
+            0.1665326615
+          ],
+          "expectedLossAbsolute": 5.044913919e-05,
+          "id": "C",
+          "lift": 0.06666666667,
+          "observedPower": 0.2923112407,
+          "pValue": 0.1575620252,
+          "probabilityToBeBest": 0.05119156058,
+          "probabilityToBeatControl": 0.9211700775,
+          "requiredSamplePerVariant": 53211,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": 1.413318744
+        },
+        {
+          "absoluteDiff": -0.0006666666667,
+          "achievedMde": 0.1342235389,
+          "ciAbsolute": [
+            -0.003381833217,
+            0.002048499884
+          ],
+          "credibleIntervalRelative": [
+            -0.1077228979,
+            0.07147206014
+          ],
+          "expectedLossAbsolute": 0.0009489142961,
+          "id": "D",
+          "lift": -0.02222222222,
+          "observedPower": 0.06960684808,
+          "pValue": 0.6303470065,
+          "probabilityToBeBest": 6.609490759e-05,
+          "probabilityToBeatControl": 0.3152262653,
+          "requiredSamplePerVariant": 53211,
+          "significant": false,
+          "verdictBayes": "underpowered",
+          "verdictZ": "underpowered",
+          "z": -0.4812384921
+        },
+        {
+          "absoluteDiff": 0.004,
+          "achievedMde": 0.1342235389,
+          "ciAbsolute": [
+            0.001183647008,
+            0.006816352992
+          ],
+          "credibleIntervalRelative": [
+            0.0376797809,
+            0.2378005815
+          ],
+          "expectedLossAbsolute": 1.156449054e-06,
+          "id": "E",
+          "lift": 0.1333333333,
+          "observedPower": 0.794952603,
+          "pValue": 0.005374424006,
+          "probabilityToBeBest": 0.7174897262,
+          "probabilityToBeatControl": 0.9973118096,
+          "requiredSamplePerVariant": 53211,
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "winner",
+          "z": 2.783690809
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 15,
+      "input": {
+        "days": 14,
+        "groups": [
+          {
+            "conversions": 800,
+            "users": 40000
+          },
+          {
+            "conversions": 900,
+            "users": 40000
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": [
+          4,
+          2,
+          80000
+        ],
+        "trafficShare": 1.0
+      },
+      "name": "sequential-look-2-of-4",
+      "probabilityToBeBestControl": 0.007114799677,
+      "rates": [
+        0.02,
+        0.0225
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.0025,
+          "achievedMde": 0.143451202,
+          "ciAbsolute": [
+            0.0005013712337,
+            0.004498628766
+          ],
+          "credibleIntervalRelative": [
+            0.02386203096,
+            0.2361227142
+          ],
+          "expectedLossAbsolute": 2.375285104e-06,
+          "id": "B",
+          "lift": 0.125,
+          "observedPower": 0.6885243395,
+          "pValue": 0.01422084898,
+          "probabilityToBeBest": 0.9928852003,
+          "probabilityToBeatControl": 0.9928852003,
+          "requiredSamplePerVariant": 80682,
+          "sequential": {
+            "crossed": false,
+            "informationFraction": 0.5,
+            "isFinal": false,
+            "zBoundary": 2.963131568
+          },
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "underpowered",
+          "z": 2.451635864
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 0,
+      "input": {
+        "days": 28,
+        "groups": [
+          {
+            "conversions": 1640,
+            "users": 82000
+          },
+          {
+            "conversions": 1760,
+            "users": 82000
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": [
+          4,
+          4,
+          80000
+        ],
+        "trafficShare": 1.0
+      },
+      "name": "sequential-final",
+      "probabilityToBeBestControl": 0.01878496756,
+      "rates": [
+        0.02,
+        0.02146341463
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.001463414634,
+          "achievedMde": 0.0991736163,
+          "ciAbsolute": [
+            8.424140999e-05,
+            0.002842587858
+          ],
+          "credibleIntervalRelative": [
+            0.004065635254,
+            0.1470304131
+          ],
+          "expectedLossAbsolute": 4.817439246e-06,
+          "id": "B",
+          "lift": 0.07317073171,
+          "observedPower": 0.5476462325,
+          "pValue": 0.03755482674,
+          "probabilityToBeBest": 0.9812150324,
+          "probabilityToBeatControl": 0.9812150324,
+          "requiredSamplePerVariant": 80682,
+          "sequential": {
+            "crossed": true,
+            "informationFraction": 1.0,
+            "isFinal": true,
+            "zBoundary": 2.014090207
+          },
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "winner",
+          "z": 2.07968073
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 9,
+      "input": {
+        "days": 14,
+        "groups": [
+          {
+            "conversions": 800,
+            "users": 40000
+          },
+          {
+            "conversions": 900,
+            "users": 40000
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": [
+          4,
+          2,
+          80000
+        ],
+        "trafficShare": 1.0
+      },
+      "name": "sequential-one-sided-look-2-of-4",
+      "probabilityToBeBestControl": 0.007114799677,
+      "rates": [
+        0.02,
+        0.0225
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "one-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.0025,
+          "achievedMde": 0.1268328947,
+          "ciAbsolute": [
+            0.0008226978653,
+            null
+          ],
+          "credibleIntervalRelative": [
+            0.02386203096,
+            0.2361227142
+          ],
+          "expectedLossAbsolute": 2.375285104e-06,
+          "id": "B",
+          "lift": 0.125,
+          "observedPower": 0.7901040225,
+          "pValue": 0.007110424489,
+          "probabilityToBeBest": 0.9928852003,
+          "probabilityToBeatControl": 0.9928852003,
+          "requiredSamplePerVariant": 63553,
+          "sequential": {
+            "crossed": false,
+            "informationFraction": 0.5,
+            "isFinal": false,
+            "zBoundary": 2.539942528
+          },
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "underpowered",
+          "z": 2.451635864
+        }
+      ]
+    },
+    {
+      "alpha": 0.05,
+      "extraDays": 0,
+      "input": {
+        "days": 14,
+        "groups": [
+          {
+            "conversions": 1600,
+            "users": 80000
+          },
+          {
+            "conversions": 1696,
+            "users": 80000
+          }
+        ],
+        "intendedSplit": [
+          0.5,
+          0.5
+        ],
+        "referenceLift": 0.1,
+        "revenue": null,
+        "sequential": [
+          4,
+          4,
+          80000
+        ],
+        "trafficShare": 1.0
+      },
+      "name": "sequential-one-sided-final",
+      "probabilityToBeBestControl": 0.04556392804,
+      "rates": [
+        0.02,
+        0.0212
+      ],
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "one-sided",
+        "power": 0.8
+      },
+      "srm": {
+        "chiSquare": 0.0,
+        "pValue": 1.0
+      },
+      "variants": [
+        {
+          "absoluteDiff": 0.0012,
+          "achievedMde": 0.08889880215,
+          "ciAbsolute": [
+            3.182731651e-05,
+            null
+          ],
+          "credibleIntervalRelative": [
+            -0.009280316489,
+            0.1341236938
+          ],
+          "expectedLossAbsolute": 1.332916703e-05,
+          "id": "B",
+          "lift": 0.06,
+          "observedPower": 0.5178724853,
+          "pValue": 0.04554571557,
+          "probabilityToBeBest": 0.954436072,
+          "probabilityToBeatControl": 0.954436072,
+          "requiredSamplePerVariant": 63553,
+          "sequential": {
+            "crossed": false,
+            "informationFraction": 1.0,
+            "isFinal": true,
+            "zBoundary": 1.720177145
+          },
+          "significant": true,
+          "verdictBayes": "winner",
+          "verdictZ": "no-difference",
+          "z": 1.6896683
+        }
+      ]
+    }
+  ],
+  "obf": [
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        2.962588043,
+        1.968595632
+      ],
+      "hypothesis": "two-sided",
+      "inflationFactor": {
+        "0.8": 1.00372464,
+        "0.9": 1.003417397
+      },
+      "looks": 2,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        3.710302873,
+        2.511427437,
+        1.99304754
+      ],
+      "hypothesis": "two-sided",
+      "inflationFactor": {
+        "0.8": 1.012794867,
+        "0.9": 1.011852865
+      },
+      "looks": 3,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        4.332633646,
+        2.963131568,
+        2.359044323,
+        2.014090207
+      ],
+      "hypothesis": "two-sided",
+      "inflationFactor": {
+        "0.8": 1.019637353,
+        "0.9": 1.018280107
+      },
+      "looks": 4,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        4.876884949,
+        3.357011907,
+        2.68028008,
+        2.289816822,
+        2.031032113
+      ],
+      "hypothesis": "two-sided",
+      "inflationFactor": {
+        "0.8": 1.024719896,
+        "0.9": 1.02307837
+      },
+      "looks": 5,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        2.537987603,
+        1.662106648
+      ],
+      "hypothesis": "one-sided",
+      "inflationFactor": {
+        "0.8": 1.007870148,
+        "0.9": 1.007191288
+      },
+      "looks": 2,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        3.200101972,
+        2.140815209,
+        1.69481204
+      ],
+      "hypothesis": "one-sided",
+      "inflationFactor": {
+        "0.8": 1.020305209,
+        "0.9": 1.018748932
+      },
+      "looks": 3,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        3.749551837,
+        2.539942528,
+        2.016069914,
+        1.720177145
+      ],
+      "hypothesis": "one-sided",
+      "inflationFactor": {
+        "0.8": 1.028874252,
+        "0.9": 1.026781734
+      },
+      "looks": 4,
+      "spentAlpha": 0.05
+    },
+    {
+      "alpha": 0.05,
+      "boundaries": [
+        4.229195059,
+        2.888136516,
+        2.298090328,
+        1.961821536,
+        1.739704583
+      ],
+      "hypothesis": "one-sided",
+      "inflationFactor": {
+        "0.8": 1.034971901,
+        "0.9": 1.032525967
+      },
+      "looks": 5,
+      "spentAlpha": 0.05
+    }
+  ],
+  "pretest": [
+    {
+      "alpha": 0.05,
+      "baselineRate": 0.03,
+      "input": {
+        "groups": 2,
+        "horizonWeeks": 4,
+        "looks": 4,
+        "targetLift": 0.1,
+        "trafficShare": 1.0,
+        "weeklyConversions": 300,
+        "weeklyTraffic": 10000
+      },
+      "name": "two-group",
+      "sequential": {
+        "boundaries": [
+          {
+            "informationFraction": 0.25,
+            "look": 1,
+            "nominalP": 1.473361687e-05,
+            "zBoundary": 4.332633646
+          },
+          {
+            "informationFraction": 0.5,
+            "look": 2,
+            "nominalP": 0.003045263759,
+            "zBoundary": 2.963131568
+          },
+          {
+            "informationFraction": 0.75,
+            "look": 3,
+            "nominalP": 0.01832206727,
+            "zBoundary": 2.359044323
+          },
+          {
+            "informationFraction": 1.0,
+            "look": 4,
+            "nominalP": 0.04400006348,
+            "zBoundary": 2.014090207
+          }
+        ],
+        "inflationFactor": 1.019637353,
+        "maxSamplePerVariant": 54256,
+        "planDays": 76
+      },
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "two-sided",
+        "power": 0.8
+      },
+      "targetLift": {
+        "days": 75,
+        "samplePerVariant": 53211
+      },
+      "weeks": [
+        {
+          "mdeAbsolute": 0.01031884983,
+          "mdeRelative": 0.3439616611,
+          "visitorsPerVariant": 5000.0,
+          "week": 1
+        },
+        {
+          "mdeAbsolute": 0.00713577099,
+          "mdeRelative": 0.237859033,
+          "visitorsPerVariant": 10000.0,
+          "week": 2
+        },
+        {
+          "mdeAbsolute": 0.00576886674,
+          "mdeRelative": 0.192295558,
+          "visitorsPerVariant": 15000.0,
+          "week": 3
+        },
+        {
+          "mdeAbsolute": 0.004966495022,
+          "mdeRelative": 0.1655498341,
+          "visitorsPerVariant": 20000.0,
+          "week": 4
+        }
+      ]
+    },
+    {
+      "alpha": 0.025,
+      "baselineRate": 0.025,
+      "input": {
+        "groups": 3,
+        "horizonWeeks": 6,
+        "looks": 3,
+        "targetLift": 0.15,
+        "trafficShare": 0.5,
+        "weeklyConversions": 500,
+        "weeklyTraffic": 20000
+      },
+      "name": "three-group-one-sided",
+      "sequential": {
+        "boundaries": [
+          {
+            "informationFraction": 0.3333333333,
+            "look": 1,
+            "nominalP": 0.0001035057181,
+            "zBoundary": 3.710302873
+          },
+          {
+            "informationFraction": 0.6666666667,
+            "look": 2,
+            "nominalP": 0.006012200191,
+            "zBoundary": 2.511427437
+          },
+          {
+            "informationFraction": 1.0,
+            "look": 3,
+            "nominalP": 0.02312812077,
+            "zBoundary": 1.993047541
+          }
+        ],
+        "inflationFactor": 1.012794867,
+        "maxSamplePerVariant": 29567,
+        "planDays": 63
+      },
+      "settings": {
+        "bonferroni": true,
+        "confidence": 0.95,
+        "hypothesis": "one-sided",
+        "power": 0.8
+      },
+      "targetLift": {
+        "days": 62,
+        "samplePerVariant": 29193
+      },
+      "weeks": [
+        {
+          "mdeAbsolute": 0.01188065465,
+          "mdeRelative": 0.4752261858,
+          "visitorsPerVariant": 3333.333333,
+          "week": 1
+        },
+        {
+          "mdeAbsolute": 0.008152439891,
+          "mdeRelative": 0.3260975956,
+          "visitorsPerVariant": 6666.666667,
+          "week": 2
+        },
+        {
+          "mdeAbsolute": 0.006568002911,
+          "mdeRelative": 0.2627201164,
+          "visitorsPerVariant": 10000.0,
+          "week": 3
+        },
+        {
+          "mdeAbsolute": 0.005642774409,
+          "mdeRelative": 0.2257109764,
+          "visitorsPerVariant": 13333.33333,
+          "week": 4
+        },
+        {
+          "mdeAbsolute": 0.005019555527,
+          "mdeRelative": 0.2007822211,
+          "visitorsPerVariant": 16666.66667,
+          "week": 5
+        },
+        {
+          "mdeAbsolute": 0.004563747838,
+          "mdeRelative": 0.1825499135,
+          "visitorsPerVariant": 20000.0,
+          "week": 6
+        }
+      ]
+    }
+  ]
+}
