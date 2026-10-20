@@ -163,3 +163,52 @@ it("parses a complete group before the other groups are filled", () => {
     "invalid",
   );
 });
+
+it("compares complete non-contiguous variants while retaining invalid row errors", () => {
+  let state = reducer(initialState("pt"), { type: "example", tab: "analysis" });
+  state = reducer(state, { type: "add-variant" });
+  state = reducer(state, { type: "add-variant" });
+  state = reducer(state, { type: "remove-variant", id: "C" });
+  state = reducer(state, { type: "group", id: "A", patch: { splitPct: "60" } });
+  state = reducer(state, {
+    type: "group",
+    id: "B",
+    patch: { users: "100", conversions: "101", splitPct: "20" },
+  });
+  state = reducer(state, {
+    type: "group",
+    id: "D",
+    patch: { users: "80000", conversions: "1696", splitPct: "20" },
+  });
+  const parsed = parseAnalysis(state.analysis, state.currency, null, "pt");
+  expect(parsed.errors["B.conversions"]).toBe("exceeds");
+  if (parsed.kind !== "ok")
+    throw new Error("Complete A and D must remain comparable");
+  expect(parsed.input.groups.map((group) => group.id)).toEqual(["A", "D"]);
+  expect(parsed.input.intendedSplit[0]).toBeCloseTo(0.75);
+  expect(parsed.input.intendedSplit[1]).toBeCloseTo(0.25);
+  const invalidControl = {
+    ...state.analysis,
+    groups: state.analysis.groups.map((group) =>
+      group.id === "A" ? { ...group, conversions: "80001" } : group,
+    ),
+  };
+  expect(parseAnalysis(invalidControl, state.currency, null, "pt").kind).toBe(
+    "invalid",
+  );
+  const invalidSplit = {
+    ...state.analysis,
+    groups: state.analysis.groups.map((group) =>
+      group.id === "B" ? { ...group, splitPct: "10" } : group,
+    ),
+  };
+  expect(
+    parseAnalysis(invalidSplit, state.currency, null, "pt").errors.split,
+  ).toBe("splitError");
+});
+
+it("keeps two significant digits in small nonzero risks", () => {
+  expect(formatters.pt.pp(0.000014)).toBe("0,0014 p.p.");
+  expect(formatters.en.pp(0.000014)).toBe("0.0014 p.p.");
+  expect(formatters.pt.pp(0)).toBe("0,00 p.p.");
+});

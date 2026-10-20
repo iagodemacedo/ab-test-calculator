@@ -236,14 +236,14 @@ export default function Calculator({
     JSON.stringify(state.planSource) !== JSON.stringify(state.pretest) ||
     Boolean(
       state.plan &&
-        response?.plan &&
-        !busy &&
-        (state.plan.groups !== response.plan.groups ||
-          state.plan.trafficShare !== response.plan.trafficShare ||
-          state.plan.referenceLift !== response.plan.referenceLift ||
-          state.plan.samplePerVariant !== response.plan.samplePerVariant ||
-          state.plan.days !== response.plan.days ||
-          state.plan.looks !== response.plan.looks),
+      response?.plan &&
+      !busy &&
+      (state.plan.groups !== response.plan.groups ||
+        state.plan.trafficShare !== response.plan.trafficShare ||
+        state.plan.referenceLift !== response.plan.referenceLift ||
+        state.plan.samplePerVariant !== response.plan.samplePerVariant ||
+        state.plan.days !== response.plan.days ||
+        state.plan.looks !== response.plan.looks),
     );
   const usePlan = () => {
     if (!response?.plan || busy || !canUsePlan(response.plan)) return;
@@ -607,6 +607,14 @@ export default function Calculator({
             <div class="results-body">
               {tab === "analysis" ? (
                 <>
+                  {ok &&
+                    analysis.kind === "ok" &&
+                    analysis.input.groups.length <
+                      state.analysis.groups.length && (
+                      <p class="small-note" role="status">
+                        {t.partialNotice}
+                      </p>
+                    )}
                   {ok ? (
                     <Verdicts
                       result={ok}

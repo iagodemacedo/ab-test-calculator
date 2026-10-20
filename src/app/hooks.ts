@@ -157,6 +157,9 @@ export function useEngine(state: AppState, locale: Locale, ready: boolean) {
       id,
       analysis: analysis.kind === "ok" ? analysis.input : null,
       groups,
+      incompleteGroups: state.analysis.groups.filter(
+        (group) => !groups.some((complete) => complete.id === group.id),
+      ),
       pretest: pretest.kind === "ok" ? pretest.input : null,
       selectedWeek: state.pretest.selectedWeek,
       settings: state.settings,

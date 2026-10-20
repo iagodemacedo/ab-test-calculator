@@ -34,7 +34,12 @@ function createFormatter(locale: Locale): Formatter {
       }),
     int: (n) => format(n, { maximumFractionDigits: 0 }),
     pp: (n) =>
-      `${format(n * 100, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} p.p.`,
+      `${format(
+        n * 100,
+        n !== 0 && Math.abs(n * 100) < 0.1
+          ? { minimumSignificantDigits: 2, maximumSignificantDigits: 2 }
+          : { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+      )} p.p.`,
     currency: (n, currency) => format(n, { style: "currency", currency }),
     pvalue: (n) =>
       n < 0.0001
