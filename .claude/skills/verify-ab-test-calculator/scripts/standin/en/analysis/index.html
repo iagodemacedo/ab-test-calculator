@@ -1,0 +1,21 @@
+<!doctype html>
+<!-- Verification scaffolding: stand-in page used only by `ctl selftest` to prove the harness. Not the app. -->
+<html lang="en">
+<head><meta charset="utf-8"><title>AB Test Calculator (stand-in)</title></head>
+<body>
+<main data-ready="false">
+  <h1>AB Test Calculator (stand-in)</h1>
+  <label for="u">Usuários do Controle</label> <input id="u" inputmode="decimal">
+  <button type="button" id="go">Calcular</button>
+  <section role="region" aria-label="Resultado"><p id="out">—</p></section>
+</main>
+<script>
+  document.getElementById("go").addEventListener("click", () => {
+    const n = Number(document.getElementById("u").value);
+    const a = 1600 / n, b = 1696 / n;
+    document.getElementById("out").textContent = "Lift: " + (((b - a) / a) * 100).toFixed(2).replace(".", ",") + "%";
+  });
+  document.querySelector("main").dataset.ready = "true";
+</script>
+</body>
+</html>

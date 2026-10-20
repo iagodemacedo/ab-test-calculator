@@ -1,0 +1,4 @@
+# Verification evidence (kept locally, not versioned)
+artifacts/
+# Verification harness dependencies
+.claude/skills/verify-ab-test-calculator/scripts/node_modules/

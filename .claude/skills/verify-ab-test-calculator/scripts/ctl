@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+# ctl: launch, doctor, drive and clean up AB Test Calculator for verification.
+# Every command except `launch` needs ABCALC_RUN_ID (printed by `launch`).
+set -euo pipefail
+
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPTS="$SKILL_DIR/scripts"
+REPO="$(cd "$SKILL_DIR/../../.." && pwd)"
+STATE_ROOT="${TMPDIR:-/tmp}/abcalc-verify"
+
+# Cloudflare Turnstile test keys: always pass, never show a challenge.
+TURNSTILE_TEST_SITE_KEY="1x00000000000000000000AA"
+TURNSTILE_TEST_SECRET_KEY="1x0000000000000000000000000000000AA"
+
+die() { echo "ctl: $*" >&2; exit 1; }
+
+free_port() { python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1",0)); print(s.getsockname()[1]); s.close()'; }
+
+load_run() {
+  [[ -n "${ABCALC_RUN_ID:-}" ]] || die "ABCALC_RUN_ID is not set. Run 'ctl launch' first and export the id it prints."
+  STATE="$STATE_ROOT/$ABCALC_RUN_ID"
+  [[ -f "$STATE/env" ]] || die "no run state at $STATE (already cleaned up, or wrong ABCALC_RUN_ID)"
+  # shellcheck disable=SC1091
+  source "$STATE/env"
+  export ABCALC_STATE="$STATE" ABCALC_APP_URL="$APP_URL" ABCALC_CDP_PORT="$CDP_PORT"
+  EVIDENCE="$REPO/artifacts/verify/$ABCALC_RUN_ID"
+}
+
+ensure_harness() {
+  [[ -d "$SCRIPTS/node_modules/playwright-core" ]] || (cd "$SCRIPTS" && npm install --no-audit --no-fund >/dev/null)
+}
+
+pkg_manager() {
+  if [[ -f "$REPO/pnpm-lock.yaml" ]]; then echo pnpm
+  elif [[ -f "$REPO/package-lock.json" ]]; then echo npm
+  elif [[ -f "$REPO/package.json" ]]; then echo npm
+  else echo none; fi
+}
+
+wait_ready() {
+  local deadline=$((SECONDS + ${ABCALC_READY_TIMEOUT:-180}))
+  while (( SECONDS < deadline )); do
+    if ! kill -0 "$APP_PID" 2>/dev/null; then
+      echo "--- app exited during startup; last log lines:" >&2; tail -40 "$STATE/app.log" >&2; return 1
+    fi
+    if curl -fsSL "$APP_URL/pt/analise" 2>/dev/null | grep -q "AB Test Calculator"; then return 0; fi
+    sleep 1
+  done
+  echo "--- app not ready after timeout; last log lines:" >&2; tail -40 "$STATE/app.log" >&2
+  return 1
+}
+
+cmd_launch() {
+  local mode="app"
+  [[ "${1:-}" == "--standin" ]] && mode="standin"
+  if [[ "$mode" == "app" ]]; then
+    [[ -f "$REPO/package.json" ]] || die "no package.json in $REPO: the app is not scaffolded yet. Use 'ctl selftest' to prove the harness only."
+    command -v "$(pkg_manager)" >/dev/null || die "$(pkg_manager) is not installed (try: corepack enable)"
+  fi
+  local run_id="r$(date +%Y%m%d-%H%M%S)-$$"
+  STATE="$STATE_ROOT/$run_id"
+  mkdir -p "$STATE"
+  APP_PORT="$(free_port)"; CDP_PORT="$(free_port)"
+  APP_URL="http://127.0.0.1:$APP_PORT"
+  local rev; rev="$(git -C "$REPO" rev-parse --short HEAD 2>/dev/null || echo none)"
+  local dirty; dirty="$(git -C "$REPO" status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
+
+  if [[ "$mode" == "standin" ]]; then
+    # Verification scaffolding: a static stand-in page used only by `ctl selftest`
+    # to prove the harness itself. It is not the app.
+    (cd "$SCRIPTS/standin" && exec setsid python3 -m http.server "$APP_PORT" --bind 127.0.0.1) >"$STATE/app.log" 2>&1 &
+  else
+    local pm; pm="$(pkg_manager)"
+    echo "ctl: installing deps and building with $pm (log: $STATE/app.log)" >&2
+    (cd "$REPO" && "$pm" install >"$STATE/app.log" 2>&1) || { tail -40 "$STATE/app.log" >&2; die "install failed"; }
+    (cd "$REPO" && PUBLIC_TURNSTILE_SITE_KEY="$TURNSTILE_TEST_SITE_KEY" PUBLIC_UMAMI_WEBSITE_ID="${ABCALC_UMAMI_WEBSITE_ID:-}" \
+      "$pm" run build >>"$STATE/app.log" 2>&1) || { tail -40 "$STATE/app.log" >&2; die "build failed"; }
+    # Serve the built site and the /api/tldr Worker together, like production.
+    # Local state (rate-limit counter) goes to this run's own directory.
+    local launch_cmd="${ABCALC_LAUNCH_CMD:-npx wrangler dev --ip 127.0.0.1 --port $APP_PORT --persist-to $STATE/wrangler --var TURNSTILE_SECRET_KEY:$TURNSTILE_TEST_SECRET_KEY}"
+    (cd "$REPO" && exec setsid bash -c "$launch_cmd") >>"$STATE/app.log" 2>&1 &
+  fi
+  APP_PID=$!
+  cat >"$STATE/env" <<EOF
+MODE=$mode
+APP_PORT=$APP_PORT
+CDP_PORT=$CDP_PORT
+APP_URL=$APP_URL
+APP_PID=$APP_PID
+BUILD_REV=$rev
+BUILD_DIRTY_FILES=$dirty
+EOF
+  if ! wait_ready; then
+    echo "ctl: launch failed; cleaning up this run's processes" >&2
+    ABCALC_RUN_ID="$run_id" cmd_cleanup >&2 || true
+    exit 1
+  fi
+  echo "ready: $APP_URL (mode=$mode, rev=$rev, dirty_files=$dirty)" >&2
+  echo "export ABCALC_RUN_ID=$run_id"
+}
+
+check() { # name, command...
+  local name="$1"; shift
+  if out="$("$@" 2>&1)"; then printf 'PASS  %-22s %s\n' "$name" "$out"; else printf 'FAIL  %-22s %s\n' "$name" "$out"; FAILED=1; fi
+}
+
+cmd_doctor() {
+  load_run
+  FAILED=0
+  echo "run $ABCALC_RUN_ID  mode=$MODE  url=$APP_URL"
+  check "app process" bash -c "kill -0 $APP_PID && echo pid $APP_PID"
+  check "port owned by run" bash -c "pgid=\$(ps -o pgid= -p $APP_PID | tr -d ' '); for p in \$(ss -ltnpH 'sport = :$APP_PORT' | grep -oE 'pid=[0-9]+' | cut -d= -f2 | sort -u); do if [[ \$(ps -o pgid= -p \$p | tr -d ' ') == \$pgid ]]; then echo \"port $APP_PORT held by pid \$p (our process group)\"; exit 0; fi; done; echo 'port $APP_PORT is not held by this run (another process owns it)'; exit 1"
+  check "page /pt/analise" bash -c "curl -fsSL -o /dev/null -w '%{http_code}' $APP_URL/pt/analise"
+  check "page /en/analysis" bash -c "curl -fsSL -o /dev/null -w '%{http_code}' $APP_URL/en/analysis"
+  check "build revision" bash -c "now=\$(git -C '$REPO' rev-parse --short HEAD 2>/dev/null || echo none); [[ \$now == '$BUILD_REV' ]] && echo \"$BUILD_REV (dirty files at launch: $BUILD_DIRTY_FILES)\" || { echo \"launched $BUILD_REV but HEAD is \$now: relaunch\"; exit 1; }"
+  if [[ "$MODE" == "app" ]]; then
+    # Read-only probe: GET must answer 405, which proves the Worker route exists without calling the AI.
+    check "api /api/tldr route" bash -c "code=\$(curl -sS -o /dev/null -w '%{http_code}' $APP_URL/api/tldr); [[ \$code == 405 ]] && echo 'GET -> 405 (route exists)' || { echo \"GET -> \$code, expected 405\"; exit 1; }"
+    check "cloudflare auth" bash -c "cf auth whoami 2>/dev/null | grep -q '\"tokenValid\": true' && echo 'token valid (Workers AI binding runs remotely)'"
+  fi
+  if [[ -f "$STATE/chrome.pid" ]]; then
+    check "browser (CDP)" bash -c "curl -fsS http://127.0.0.1:$CDP_PORT/json/version >/dev/null && echo cdp $CDP_PORT"
+  else
+    echo "SKIP  browser (CDP)          not started (ctl browser start)"
+  fi
+  exit "$FAILED"
+}
+
+cmd_browser() {
+  load_run
+  ensure_harness
+  node "$SCRIPTS/browser.mjs" "$@"
+}
+
+cmd_evidence_dir() {
+  load_run
+  mkdir -p "$EVIDENCE"
+  echo "$EVIDENCE"
+}
+
+kill_tree() { # pid: kill the process group we started, never by name
+  local pid="$1"
+  kill -0 "$pid" 2>/dev/null || return 0
+  local pgid; pgid="$(ps -o pgid= -p "$pid" | tr -d ' ')"
+  if [[ -n "$pgid" && "$pgid" == "$pid" ]]; then kill -TERM -- "-$pgid" 2>/dev/null || true; else kill -TERM "$pid" 2>/dev/null || true; fi
+  for _ in $(seq 1 20); do kill -0 "$pid" 2>/dev/null || return 0; sleep 0.25; done
+  if [[ -n "$pgid" && "$pgid" == "$pid" ]]; then kill -KILL -- "-$pgid" 2>/dev/null || true; else kill -KILL "$pid" 2>/dev/null || true; fi
+}
+
+cmd_cleanup() {
+  [[ -n "${ABCALC_RUN_ID:-}" ]] || die "ABCALC_RUN_ID is not set"
+  STATE="$STATE_ROOT/$ABCALC_RUN_ID"
+  [[ -d "$STATE" ]] || { echo "nothing to clean for $ABCALC_RUN_ID"; return 0; }
+  if [[ -f "$STATE/chrome.pid" ]]; then kill_tree "$(cat "$STATE/chrome.pid")"; fi
+  if [[ -f "$STATE/env" ]]; then
+    # shellcheck disable=SC1091
+    source "$STATE/env"
+    kill_tree "$APP_PID"
+  fi
+  # Keep the app log next to the evidence before removing scratch state.
+  if [[ -d "$REPO/artifacts/verify/$ABCALC_RUN_ID" && -f "$STATE/app.log" ]]; then
+    cp "$STATE/app.log" "$REPO/artifacts/verify/$ABCALC_RUN_ID/app.log"
+  fi
+  rm -rf "$STATE"
+  echo "cleaned $ABCALC_RUN_ID (evidence kept in artifacts/verify/$ABCALC_RUN_ID if any)"
+}
+
+cmd_selftest() {
+  # Proves the harness (launch, doctor, browser drive, evidence, cleanup) against the stand-in page.
+  local line; line="$(cmd_launch --standin)"
+  eval "$line"
+  export ABCALC_RUN_ID
+  local ev; ev="$(cmd_evidence_dir)"
+  local rc=0
+  {
+    "$0" doctor &&
+    "$0" browser start &&
+    "$0" browser goto /pt/analise &&
+    "$0" browser fill --label "Usuários do Controle" --value 80000 &&
+    "$0" browser click --role button --name "Calcular" --wait-text "Lift: 6,00%" &&
+    "$0" browser snapshot --role region --name "Resultado" --path "$ev/selftest/result.aria.txt" &&
+    "$0" browser screenshot --path "$ev/selftest/result.png"
+  } || rc=$?
+  "$0" cleanup
+  if [[ $rc -eq 0 && -s "$ev/selftest/result.aria.txt" && -s "$ev/selftest/result.png" ]]; then
+    echo "selftest PASS: evidence survived cleanup in $ev/selftest"
+  else
+    echo "selftest FAIL (rc=$rc)"; return 1
+  fi
+}
+
+case "${1:-}" in
+  launch) shift; cmd_launch "$@" ;;
+  doctor) shift; cmd_doctor ;;
+  browser) shift; cmd_browser "$@" ;;
+  evidence-dir) shift; cmd_evidence_dir ;;
+  cleanup) shift; cmd_cleanup ;;
+  selftest) shift; cmd_selftest ;;
+  *) echo "usage: ctl {launch [--standin]|doctor|browser <cmd> [flags]|evidence-dir|cleanup|selftest}" >&2; exit 2 ;;
+esac
