@@ -167,6 +167,10 @@ def plan_update():
     click('button', 'Atualizar plano')
     check('O pré-teste mudou' not in browser('text', '--css', 'main')['text'], 'Plan not updated')
     snapshot('plan-updated')
+    click('radio', '99%', '--wait-text', 'O pré-teste mudou')
+    snapshot('plan-settings-changed')
+    click('button', 'Atualizar plano')
+    snapshot('plan-settings-updated')
     browser('screenshot', '--path', str(ev / 'plan-updated.png'), '--full', '--viewport', '1440x1000')
 
 try:

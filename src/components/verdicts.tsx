@@ -120,6 +120,11 @@ export function Verdicts({
                     ? fmt.pp(v.bayes.expectedLossAbsolute)
                     : fmt.num(v.ztest.z, 4)
                 }
+                note={
+                  bayes && v.bayes.expectedLossRelative !== null
+                    ? `${fmt.pct(v.bayes.expectedLossRelative)} ${t.relative}`
+                    : undefined
+                }
               />
               {bayes && state.analysis.groups.length > 2 && (
                 <Stat
@@ -208,6 +213,7 @@ export function Verdicts({
               </>
             )}
             <Explanation
+              key={bayes ? "expected-risk" : "p-value"}
               id={bayes ? "expected-risk" : "p-value"}
               content={content}
               context={ctx}

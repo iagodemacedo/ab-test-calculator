@@ -300,6 +300,9 @@ export function AnalysisCharts({
     padding = (max - min) * 0.15;
   const x = (n: number) =>
     L + ((n - min + padding) / (max - min + padding * 2)) * (W - L - R);
+  const ticks = [min, 0, max]
+    .filter((value, i, values) => values.indexOf(value) === i)
+    .filter((value) => value === 0 || Math.abs(x(value) - x(0)) >= 72);
   return (
     <>
       <figure class="chart-frame">
@@ -355,18 +358,16 @@ export function AnalysisCharts({
               stroke="var(--muted)"
               stroke-dasharray="4 4"
             />
-            {[min, 0, max]
-              .filter((v, i, xs) => xs.indexOf(v) === i)
-              .map((n) => (
-                <text
-                  key={n}
-                  x={x(n)}
-                  y={50 + intervals.length * 48}
-                  text-anchor="middle"
-                >
-                  {fmt.pct(n, 1)}
-                </text>
-              ))}
+            {ticks.map((n) => (
+              <text
+                key={n}
+                x={x(n)}
+                y={50 + intervals.length * 48}
+                text-anchor="middle"
+              >
+                {fmt.pct(n, 1)}
+              </text>
+            ))}
             {intervals.map((v, i) => (
               <g key={v.id}>
                 <text x={L} y={20 + i * 48} class="direct-label">

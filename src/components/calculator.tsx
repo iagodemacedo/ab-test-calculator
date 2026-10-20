@@ -223,6 +223,19 @@ export default function Calculator({
       unit={unit}
     />
   );
+  const planChanged =
+    JSON.stringify(state.planSource) !== JSON.stringify(state.pretest) ||
+    Boolean(
+      state.plan &&
+        response?.plan &&
+        !busy &&
+        (state.plan.groups !== response.plan.groups ||
+          state.plan.trafficShare !== response.plan.trafficShare ||
+          state.plan.referenceLift !== response.plan.referenceLift ||
+          state.plan.samplePerVariant !== response.plan.samplePerVariant ||
+          state.plan.days !== response.plan.days ||
+          state.plan.looks !== response.plan.looks),
+    );
   const usePlan = () => {
     if (!response?.plan || busy) return;
     const action: Action = {
@@ -282,8 +295,7 @@ export default function Calculator({
               {t.sample}{" "}
               <span class="metric">{fmt.int(state.plan.samplePerVariant)}</span>
             </p>
-            {JSON.stringify(state.planSource) !==
-              JSON.stringify(state.pretest) && (
+            {planChanged && (
               <>
                 <p class="small-note">{t.planChanged}</p>
                 <Button onClick={usePlan} disabled={!response?.plan || busy}>
