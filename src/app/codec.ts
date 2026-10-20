@@ -1,6 +1,6 @@
 import { GROUP_IDS, RULE_SEVERITY, toFraction, toLift } from "../stats";
 import type { Locale, Plan, Tldr, TldrFinding } from "../stats";
-import type { AppState, AnalysisFields, PretestFields } from "./state";
+import type { AppState, AnalysisFields, PretestFields, Tab } from "./state";
 import { STATE_VERSION } from "./state";
 
 export const DRAFT_KEY = "abcalc-draft-v1";
@@ -295,8 +295,8 @@ function translateFields(state: AppState, from: Locale, to: Locale): AppState {
     },
   };
 }
-function serialize(state: AppState, locale: Locale): string {
-  return JSON.stringify({ locale, state });
+function serialize(state: AppState, locale: Locale, tab?: Tab): string {
+  return JSON.stringify({ locale, state, ...(tab ? { tab } : {}) });
 }
 function deserialize(raw: string, locale: Locale): AppState | null {
   if (raw.length > MAX_BYTES) return null;
@@ -384,9 +384,10 @@ export function saveDraft(
   storage: Storage,
   state: AppState,
   locale: Locale,
+  tab: Tab,
 ): void {
   try {
-    storage.setItem(DRAFT_KEY, serialize(state, locale));
+    storage.setItem(DRAFT_KEY, serialize(state, locale, tab));
   } catch {
     /* Storage can be unavailable in private browsing. */
   }
@@ -396,5 +397,19 @@ export function clearDraft(storage: Storage): void {
     storage.removeItem(DRAFT_KEY);
   } catch {
     /* The calculator works without storage. */
+  }
+}
+
+export function readDraftTab(storage: Storage): Tab | null {
+  try {
+    const raw = storage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const value: unknown = JSON.parse(raw);
+    return record(value) &&
+      (value.tab === "analysis" || value.tab === "pretest")
+      ? value.tab
+      : null;
+  } catch {
+    return null;
   }
 }

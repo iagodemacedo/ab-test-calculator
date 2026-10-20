@@ -6,17 +6,30 @@ import {
   useState,
 } from "preact/hooks";
 import type { Locale } from "../stats/types";
-import type { Action, AppState } from "./state";
+import type { Action, AppState, Tab } from "./state";
 import { initialState, reducer } from "./reducer";
-import { clearDraft, decode, encode, readDraft, saveDraft } from "./codec";
+import {
+  clearDraft,
+  decode,
+  encode,
+  readDraft,
+  readDraftTab,
+  saveDraft,
+} from "./codec";
+import { routes } from "../i18n/routes";
 import { parseAnalysis, parsePretest } from "./parse";
 import type { EngineRequest, EngineResponse } from "./engine-protocol";
 
-export function useCalculatorState(locale: Locale) {
+export function useCalculatorState(
+  locale: Locale,
+  tab: Tab,
+  restoreTab: (tab: Tab) => void,
+) {
   const [state, setState] = useState(() => initialState(locale));
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState("");
   const dirty = useRef(false);
+  const lastTab = useRef(tab);
   const revision = useRef(0);
   const dispatch = useCallback(
     (action: Action) => {
@@ -37,8 +50,10 @@ export function useCalculatorState(locale: Locale) {
     let active = true;
     void (async () => {
       let draft: AppState | null = null;
+      let draftTab: Tab | null = null;
       try {
         draft = readDraft(localStorage, locale);
+        draftTab = readDraftTab(localStorage);
       } catch {}
       if (location.hash) {
         const shared = await decode(location.hash, locale);
@@ -49,7 +64,13 @@ export function useCalculatorState(locale: Locale) {
           if (draft) setNotice("replacedDraft");
           dirty.current = true;
         }
-      } else if (draft) setState(draft);
+      } else if (draft) {
+        setState(draft);
+        if (draftTab && draftTab !== tab) {
+          history.replaceState(null, "", routes[locale][draftTab]);
+          restoreTab(draftTab);
+        }
+      }
       setReady(true);
     })();
     return () => {
@@ -57,11 +78,16 @@ export function useCalculatorState(locale: Locale) {
     };
   }, [locale]);
   useEffect(() => {
-    if (!ready || !dirty.current) return;
+    if (!ready) return;
+    if (lastTab.current !== tab) {
+      dirty.current = true;
+      lastTab.current = tab;
+    }
+    if (!dirty.current) return;
     const at = revision.current;
     const timer = setTimeout(() => {
       try {
-        saveDraft(localStorage, state, locale);
+        saveDraft(localStorage, state, locale, tab);
       } catch {}
       void encode(
         state,
@@ -73,7 +99,7 @@ export function useCalculatorState(locale: Locale) {
       });
     }, 500);
     return () => clearTimeout(timer);
-  }, [state, ready, locale]);
+  }, [state, ready, locale, tab]);
   return { state, dispatch, ready, notice, setNotice };
 }
 export function useEngine(state: AppState, locale: Locale, ready: boolean) {

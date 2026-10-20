@@ -37,14 +37,17 @@ export default function Calculator({
   const t = ui[locale],
     fmt = formatters[locale],
     content = locale === "pt" ? ptContent : enContent;
-  const { state, dispatch, ready, notice, setNotice } =
-    useCalculatorState(locale);
+  const [tab, setTab] = useState(initialTab);
+  const { state, dispatch, ready, notice, setNotice } = useCalculatorState(
+    locale,
+    tab,
+    setTab,
+  );
   const { analysis, pretest, response, computedState, busy, error } = useEngine(
     state,
     locale,
     ready,
   );
-  const [tab, setTab] = useState(initialTab);
   const [toast, setToast] = useState("");
   const [seqNotice, setSeqNotice] = useState(false);
   const [clearCount, setClearCount] = useState(0);
@@ -164,7 +167,7 @@ export default function Calculator({
             anchor.origin.length + anchor.pathname.length,
           ).then((link) => {
             try {
-              saveDraft(localStorage, state, locale);
+              saveDraft(localStorage, state, locale, tab);
             } catch {}
             if (language !== locale)
               track("language_switched", { locale: language });

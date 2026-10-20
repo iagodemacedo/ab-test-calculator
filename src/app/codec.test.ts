@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { decode, encode, parseState } from "./codec";
+import {
+  decode,
+  encode,
+  parseState,
+  saveDraft,
+  readDraft,
+  readDraftTab,
+  clearDraft,
+} from "./codec";
 import { initialState, reducer } from "./reducer";
 
 describe("shared calculator links", () => {
@@ -39,4 +47,30 @@ describe("shared calculator links", () => {
     expect(link.omittedTldr).toBe(true);
     expect((await decode(link.fragment, "en"))?.tldr).toBeNull();
   });
+});
+
+it("restores the draft route outside AppState and clears its metadata", () => {
+  const values = new Map<string, string>();
+  const storage: Storage = {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => {
+      values.set(key, value);
+    },
+    removeItem: (key) => {
+      values.delete(key);
+    },
+    key: (index) => [...values.keys()][index] ?? null,
+  };
+  const state = initialState("pt");
+  state.pretest.targetLiftPct = "10,5";
+  saveDraft(storage, state, "pt", "pretest");
+  expect(readDraftTab(storage)).toBe("pretest");
+  expect(readDraft(storage, "en")?.pretest.targetLiftPct).toBe("10.5");
+  clearDraft(storage);
+  expect(readDraft(storage, "pt")).toBeNull();
+  expect(readDraftTab(storage)).toBeNull();
 });

@@ -176,6 +176,21 @@ def share():
     check('Não foi possível ler este link' in browser('text', '--css', 'body')['text'], 'Invalid-link notice absent')
     check(browser('value', '--role', 'spinbutton', '--name', 'Usuários (Controle)', '--exact')['value'] == '', 'Invalid link restored a draft')
     snap('share', 'invalid')
+    click('button', 'Limpar')
+    click('link', 'Pré-teste')
+    fill('Tráfego semanal', 10000)
+    fill('Conversões semanais', 300)
+    time.sleep(.6)
+    browser('goto', '/pt/analise', '--wait-url', '/pt/pre-teste')
+    check(browser('value', '--role', 'spinbutton', '--name', 'Tráfego semanal', '--exact')['value'] == '10000', 'Draft tab not restored')
+    snap('share', 'draft-tab-restored')
+    browser('goto', '/', '--wait-url', '/en/pre-test')
+    check(browser('value', '--role', 'spinbutton', '--name', 'Weekly traffic', '--exact')['value'] == '10000', 'Root did not restore the pre-test draft')
+    snap('share', 'draft-tab-root-en')
+    click('link', 'PT')
+    click('button', 'Limpar')
+    click('link', 'Análise do teste')
+
 
 
 def locale_theme():
