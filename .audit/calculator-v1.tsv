@@ -1,0 +1,3 @@
+ts	phase	decision	why	evidence	result
+2026-10-20T17:09:20Z	frame	defined done as: stats tests green against independent reference values, build under 150 KB of JS, verify skill launch and doctor pass, all 5 feature journeys run with evidence	the PRD numbers are the product, so they need a check that does not reuse the app's own code	PRD.md, .claude/skills/verify-ab-test-calculator/features/	open
+2026-10-20T17:09:20Z	frame	production deploy stays out of this run	deploy is irreversible and outward-facing, the owner did not ask for it	poteto-mode Autonomy section	open
