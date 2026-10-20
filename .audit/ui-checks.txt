@@ -1,0 +1,22 @@
+npm notice run test
+npm notice run vitest run
+
+ RUN  v5.0.5 /home/elliot/.t3/projects/abcalc-wt/ui
+
+
+ Test Files  13 passed (13)
+      Tests  286 passed (286)
+   Start at  16:17:23
+   Duration  2.55s (tests 79%, import 11%, transform 7%, worker 2%)
+
+    Isolate  13 workers spawned · ~208ms startup each (spawn + environment, per file)
+             at least ~695ms faster with isolate: false — reuses workers across files instead of one per file
+
+npm notice run typecheck
+npm notice run astro check && tsc -p worker/tsconfig.json --noEmit
+16:17:39 [types] Generated 89ms
+16:17:39 [check] Getting diagnostics for Astro files in /home/elliot/.t3/projects/abcalc-wt/ui...
+Result (61 files):
+- 0 errors
+- 0 warnings
+- 0 hints
