@@ -1,0 +1,80 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import type { Locale } from '../stats/types';
+import type { Action, AppState } from './state';
+import { initialState, reducer } from './reducer';
+import { clearDraft, decode, encode, readDraft, saveDraft } from './codec';
+import { parseAnalysis, parsePretest } from './parse';
+import type { EngineRequest, EngineResponse } from './engine-protocol';
+
+export function useCalculatorState(locale: Locale) {
+  const [state, setState] = useState(() => initialState(locale));
+  const [ready, setReady] = useState(false);
+  const [notice, setNotice] = useState('');
+  const dirty = useRef(false);
+  const revision = useRef(0);
+  const dispatch = useCallback((action: Action) => {
+    revision.current++;
+    dirty.current = action.type !== 'clear';
+    if (action.type === 'clear') {
+      try { clearDraft(localStorage); } catch {}
+      history.replaceState(null, '', location.pathname);
+      setNotice('');
+    }
+    setState(previous => reducer(previous, action, locale));
+  }, [locale]);
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      let draft: AppState | null = null;
+      try { draft = readDraft(localStorage, locale); } catch {}
+      if (location.hash) {
+        const shared = await decode(location.hash, locale);
+        if (!active) return;
+        setState(shared ?? initialState(locale));
+        if (!shared) setNotice('invalidLink');
+        else { if (draft) setNotice('replacedDraft'); dirty.current = true; }
+      } else if (draft) setState(draft);
+      setReady(true);
+    })();
+    return () => { active = false; };
+  }, [locale]);
+  useEffect(() => {
+    if (!ready || !dirty.current) return;
+    const at = revision.current;
+    const timer = setTimeout(() => {
+      try { saveDraft(localStorage, state, locale); } catch {}
+      if (location.hash.startsWith('#s=')) void encode(state, locale, location.origin.length + location.pathname.length).then(link => {
+        if (revision.current === at) history.replaceState(null, '', location.pathname + link.fragment);
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [state, ready, locale]);
+  return { state, dispatch, ready, notice, setNotice };
+}
+export function useEngine(state: AppState, locale: Locale, ready: boolean) {
+  const analysis = useMemo(() => parseAnalysis(state.analysis, state.currency, state.plan, locale), [state.analysis, state.currency, state.plan, locale]);
+  const pretest = useMemo(() => parsePretest(state.pretest, locale), [state.pretest, locale]);
+  const [response, setResponse] = useState<EngineResponse | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
+  const worker = useRef<Worker | null>(null);
+  const requestId = useRef(0);
+  useEffect(() => {
+    const instance = new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' });
+    worker.current = instance;
+    instance.onmessage = (event: MessageEvent<EngineResponse>) => {
+      if (event.data.id !== requestId.current) return;
+      setResponse(event.data); setBusy(false); setError(false);
+    };
+    instance.onerror = () => { setError(true); setBusy(false); };
+    return () => { instance.terminate(); worker.current = null; };
+  }, []);
+  useEffect(() => {
+    if (!ready || !worker.current) return;
+    const id = ++requestId.current;
+    setBusy(true); setError(false);
+    const request: EngineRequest = { id, analysis: analysis.kind === 'ok' ? analysis.input : null, pretest: pretest.kind === 'ok' ? pretest.input : null, selectedWeek: state.pretest.selectedWeek, settings: state.settings };
+    worker.current.postMessage(request);
+  }, [analysis, pretest, state.settings, state.pretest.selectedWeek, ready]);
+  return { analysis, pretest, response, busy, error };
+}

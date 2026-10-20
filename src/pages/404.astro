@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Calculator.astro';
+import { ui } from '../i18n/ui';
+---
+<Layout locale="en" page="about"><main class="methodology"><p class="metric">404</p><h1 data-error-title>{ui.en.notFound}</h1><p data-error-text>{ui.en.notFoundText}</p><div class="stack"><a data-error-analysis href="/en/analysis">{ui.en.analysis}</a><a data-error-pretest href="/en/pre-test">{ui.en.pretest}</a></div></main></Layout>
+<script>
+  import { ui } from '../i18n/ui';
+  const locale = location.pathname.startsWith('/pt') || (!location.pathname.startsWith('/en') && navigator.language.toLowerCase().startsWith('pt')) ? 'pt' : 'en';
+  document.documentElement.lang = locale === 'pt' ? 'pt-BR' : 'en';
+  document.title = `${ui[locale].notFound} · AB Test Calculator`;
+  document.querySelector('[data-error-title]')?.replaceChildren(ui[locale].notFound);
+  document.querySelector('[data-error-text]')?.replaceChildren(ui[locale].notFoundText);
+  for (const tab of ['analysis', 'pretest'] as const) {
+    const link = document.querySelector<HTMLAnchorElement>(`[data-error-${tab}]`);
+    if (link) { link.textContent = ui[locale][tab]; link.href = locale === 'pt' ? `/pt/${tab === 'analysis' ? 'analise' : 'pre-teste'}` : `/en/${tab === 'analysis' ? 'analysis' : 'pre-test'}`; }
+  }
+</script>

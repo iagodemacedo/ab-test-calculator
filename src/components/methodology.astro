@@ -1,0 +1,28 @@
+---
+import type { Locale } from '../stats/types';
+import { ui } from '../i18n/ui';
+import { formulas, rules } from '../i18n/methodology';
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const t = ui[locale];
+---
+<main class="methodology">
+  <h1>{t.about}</h1><p>{t.methodologyIntro}</p><p><a href="https://iago.wtf">{t.madeBy} ↗</a></p>
+  <h2>{t.formulas}</h2>
+  {formulas.map(row => <section><h3>{row[locale]}</h3><p><code>{locale === 'en' && row.formulaEn ? row.formulaEn : row.formula}</code></p>{row.ptNote && <p>{locale === 'pt' ? row.ptNote : row.enNote}</p>}</section>)}
+  <h2>{t.alerts}</h2>
+  <dl>{rules[locale].map(rule => <div><h3><code>{rule.id}</code> · {rule.severity}</h3><p>{rule.condition}</p></div>)}</dl>
+  <h2>{t.assumptions}</h2><p>{t.assumptionsText}</p>
+  <h2>{t.browser}</h2><p>{t.browserText}</p>
+  <h2>{t.ai}</h2><p>{t.aiText}</p>
+  <h2>{t.analytics}</h2><p>{t.analyticsText}</p>
+  <h2>{t.references}</h2>
+  <ul>
+    <li><a href="https://abtestguide.com/calc/">ABTestGuide. A/B test calculator. Z test.</a></li>
+    <li><a href="https://speero.com/ab-test-calculator">Speero. A/B test calculator.</a></li>
+    <li><a href="https://keaven.github.io/gsDesign/reference/sfLDOF.html">gsDesign. Lan-DeMets spending functions.</a></li>
+    <li><a href="https://cran.r-project.org/package=ldbounds">ldbounds. Lan-DeMets method for group sequential boundaries.</a></li>
+    <li><a href="https://doi.org/10.2307/2530245">O'Brien, P. C., Fleming, T. R. 1979. A multiple testing procedure for clinical trials. Biometrics 35, 549–556.</a></li>
+    <li><a href="https://doi.org/10.1093/biomet/70.3.659">Lan, K. K. G., DeMets, D. L. 1983. Discrete sequential boundaries for clinical trials. Biometrika 70, 659–663.</a></li>
+  </ul>
+</main>

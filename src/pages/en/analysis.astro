@@ -1,4 +1,5 @@
 ---
+import Layout from '../../layouts/Calculator.astro';
+import Calculator from '../../components/calculator';
 ---
-<html lang="en"><head><meta charset="utf-8"><title>AB Test Calculator</title></head>
-<body><main data-ready="true"><h1>AB Test Calculator</h1></main></body></html>
+<Layout locale="en" page="analysis"><Calculator locale="en" initialTab="analysis" client:load /></Layout>
