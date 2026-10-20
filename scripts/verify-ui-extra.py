@@ -85,6 +85,7 @@ def invalid():
 
 def slots():
     example()
+    browser('screenshot', '--css', '.stat.hero', '--path', str(ev / 'hero-spacing.png'), '--viewport', '1440x1000')
     for _ in range(3): click('button', 'Adicionar variante')
     marker = '.group-name:has(input[aria-label="Nome do grupo D"]) .series-marker'
     before = browser('attr', '--css', marker, '--attr', 'style')['value']
