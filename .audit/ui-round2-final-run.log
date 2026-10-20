@@ -1,0 +1,9 @@
+{"ok":true,"pid":1179529,"cdp":"http://127.0.0.1:49989","browser":"HeadlessChrome/156.0.8078.4"}
+PASS analysis
+PASS round2
+PASS pretest
+PASS share-and-draft
+PASS locale-theme
+PASS tldr
+cleaned r20261020-170428-1178412 (evidence kept in artifacts/verify/r20261020-170428-1178412 if any)
+

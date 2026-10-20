@@ -1,0 +1,9 @@
+npm notice run typecheck
+npm notice run astro check && tsc -p worker/tsconfig.json --noEmit
+17:03:56 [types] Generated 210ms
+17:03:56 [check] Getting diagnostics for Astro files in /home/elliot/.t3/projects/abcalc-wt/ui...
+Result (66 files): 
+- 0 errors
+- 0 warnings
+- 0 hints
+

@@ -52,11 +52,6 @@
     white-space: nowrap;
     letter-spacing: -0.01em;
   }
-  .brand-mark {
-    display: inline-block;
-    margin-left: 8px;
-    color: var(--accent-ink);
-  }
   .site-header nav {
     display: flex;
     align-self: stretch;
@@ -487,7 +482,16 @@
   .stat.hero .stat-value {
     font-size: 56px;
     letter-spacing: -0.04em;
+    font-kerning: normal;
     line-height: 1.05;
+  }
+  .stat.hero .stat-decimal {
+    display: inline-block;
+    width: 0.28em;
+    margin-left: -0.2em;
+    margin-right: 0.08em;
+    text-align: center;
+    letter-spacing: 0;
   }
   .stat-note {
     font-size: 12px;
@@ -985,7 +989,7 @@
 }
 @layer components {
   .group-table {
-    min-width: 640px;
+    min-width: 0;
   }
   .group-table .group-output {
     padding-top: 18px;
@@ -1057,5 +1061,75 @@
     to {
       transform: translateX(334%);
     }
+  }
+}
+
+@media (min-width: 768px) {
+  .group-table,
+  .group-table tbody {
+    display: block;
+  }
+  .group-table thead {
+    display: none;
+  }
+  .group-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+  }
+  .group-table td,
+  .group-table .group-output {
+    border: 0;
+    padding: 0;
+    min-width: 0;
+  }
+  .group-table td:first-child {
+    grid-column: 1 / -1;
+  }
+  .group-table .group-name input {
+    width: calc(100% - 48px);
+  }
+  .group-table .mobile-label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+    overflow: visible;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .group-table .remove-cell {
+    position: absolute;
+    top: 12px;
+    right: 0;
+  }
+  .group-table .input-wrap {
+    min-width: 0;
+  }
+}
+@layer components {
+  .density-labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 12px;
+  }
+  .density-labels span {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .density-chart .small-note {
+    margin-bottom: 12px;
+  }
+  .density-chart caption {
+    text-align: left;
+    font-size: 12px;
+    padding: 8px;
   }
 }

@@ -1,0 +1,11 @@
+PASS entries
+PASS invalid
+PASS slots
+PASS explanations
+PASS sequential
+PASS revenue
+PASS plan-update
+PASS long-weekly-plan
+PASS rate-ceiling-plan
+cleaned r20261020-170125-1174528 (evidence kept in artifacts/verify/r20261020-170125-1174528 if any)
+

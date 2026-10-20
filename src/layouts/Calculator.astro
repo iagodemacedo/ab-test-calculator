@@ -38,7 +38,7 @@ const umami = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID?.trim();
   <body>
     <header class="site-header">
       <div class="header-inner">
-        <a class="brand" href={routes[locale].analysis} data-calculator-link>AB Test Calculator<span class="brand-mark" aria-hidden="true">↗</span></a>
+        <a class="brand" href={routes[locale].analysis} data-calculator-link>AB Test Calculator</a>
         <nav aria-label={t.navigation}>
           <a href={routes[locale].analysis} data-calculator-link aria-current={page === 'analysis' ? 'page' : undefined}>{t.analysis}</a>
           <a href={routes[locale].pretest} data-calculator-link aria-current={page === 'pretest' ? 'page' : undefined}>{t.pretest}</a>
@@ -51,7 +51,7 @@ const umami = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID?.trim();
       </div>
     </header>
     <slot />
-    <footer class="site-footer"><a href={routes[locale].about} data-calculator-link>{t.about} ↗</a><p>{t.privacy}</p></footer>
+    <footer class="site-footer"><a href={routes[locale].about} data-calculator-link>{t.about}</a><p>{t.privacy}</p></footer>
     <script>
       import { track } from '../app/analytics';
       document.querySelectorAll<HTMLAnchorElement>('a[data-calculator-link], a[data-language]').forEach(link => {

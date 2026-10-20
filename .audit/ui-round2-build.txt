@@ -1,0 +1,26 @@
+npm notice run build
+npm notice run astro build
+17:04:35 [types] Generated 59ms
+17:04:35 [build] output: "static"
+17:04:35 [build] mode: "static"
+17:04:35 [build] directory: /home/elliot/.t3/projects/abcalc-wt/ui/dist/
+17:04:35 [build] Collecting build info...
+17:04:35 [build] ✓ Completed in 128ms.
+17:04:35 [build] Building static entrypoints...
+17:04:38 [vite] ✓ built in 2.75s
+17:04:39 [vite] ✓ built in 1.01s
+17:04:39 [build] Rearranging server assets...
+
+ generating static routes 
+17:04:39   ├─ /404.html (+20ms) 
+17:04:39   ├─ /en/about.html (+7ms) 
+17:04:39   ├─ /en/analysis.html (+35ms) 
+17:04:39   ├─ /en/pre-test.html (+11ms) 
+17:04:39   ├─ /pt/analise.html (+11ms) 
+17:04:39   ├─ /pt/pre-teste.html (+8ms) 
+17:04:39   ├─ /pt/sobre.html (+5ms) 
+17:04:39 ✓ Completed in 118ms.
+
+17:04:39 [build] ✓ Completed in 3.96s.
+17:04:39 [build] 7 page(s) built in 4.09s
+17:04:39 [build] Complete!

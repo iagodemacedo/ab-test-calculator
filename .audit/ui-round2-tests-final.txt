@@ -1,0 +1,14 @@
+npm notice run test
+npm notice run vitest run
+
+ RUN  v5.0.5 /home/elliot/.t3/projects/abcalc-wt/ui
+
+
+ Test Files  16 passed (16)
+      Tests  332 passed (332)
+   Start at  17:03:47
+   Duration  5.95s (tests 78%, import 15%, transform 4%, worker 3%)
+
+    Isolate  16 workers spawned · ~363ms startup each (spawn + environment, per file)
+             at least ~1.57s faster with isolate: false — reuses workers across files instead of one per file
+

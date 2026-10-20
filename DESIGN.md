@@ -114,7 +114,9 @@ Usadas só em alertas, achados e veredito. **Sempre com ícone + rótulo**, nunc
 | Rótulo técnico | `text-[11px] font-medium uppercase tracking-[0.08em] text-muted` | Cabeçalho de coluna de tabela, eixo de gráfico. **Não usar como eyebrow decorativo** |
 | Número de tabela | `font-mono text-[13px] tabular-nums` | Tabelas de MDE, fronteiras, fórmulas |
 
+- No número herói, o separador decimal ocupa 0,28em com tracking zero e margens de −0,2em à esquerda e 0,08em à direita. Os dígitos mantêm o tracking −0,04em. Evita espaços aparentes ao redor da vírgula na Geist Mono.
 - `tabular-nums` em **todo** número que muda com o input (evita "dança" de largura a cada tecla).
+- Risco em p.p. mantém duas casas por padrão e pelo menos dois dígitos significativos abaixo de 0,1 p.p. Um risco não nulo nunca aparece arredondado para zero.
 - Alinhamento de números em tabela: à direita. Texto: à esquerda.
 - Sem itálico, sem caixa alta em frases inteiras.
 
@@ -266,6 +268,8 @@ export function NumberField({ id, label, unit, value, error, onInput }) {
 ### 3.5 Tabela de grupos (dados do teste)
 
 Na densidade alta, os grupos não são cards: são **linhas de tabela** com inputs embutidos. Coluna 1 é o marcador quadrado da cor do slot (identidade do grupo nos gráficos) e o nome editável; depois usuários, conversões, split pretendido e as saídas calculadas (CR, lift, p-value ou P(vencer)). A linha do controle não tem botão de remover. "+ Adicionar variante" é uma linha fantasma no fim, até 5 grupos.
+
+Na coluna de inputs de 5/12, cada grupo se reorganiza num bloco compacto da tabela. Nome e remoção ficam na primeira linha; usuários, conversões e split na segunda; CR, lift e p-value ou P(vencer) na terceira. Os rótulos ficam visíveis e nenhum campo exige rolagem horizontal em 1440 px. Em mobile, os mesmos campos usam duas colunas. Ajuste de densidade registrado em 20/10/2026.
 
 ```tsx
 <table class="w-full border-collapse text-[13px]">

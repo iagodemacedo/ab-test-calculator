@@ -163,7 +163,6 @@ export function parseAnalysis(
   );
   if (Math.abs(split.reduce<number>((sum, x) => sum + (x ?? 0), 0) - 1) > 1e-8)
     errors.split = "splitError";
-  const intendedSplit = split.filter((x) => x !== null);
   const enabled = fields.sequential.enabled;
   const plannedLooks = enabled
     ? plan && plan.looks > 1
@@ -178,8 +177,31 @@ export function parseAnalysis(
   const valuePerConversion = fields.valuePerConversion.trim()
     ? number("valuePerConversion", fields.valuePerConversion, 0)
     : null;
+  const blockingErrors = Object.keys(errors).filter(
+    (key) =>
+      !parsedGroups.some(
+        (group, index) =>
+          index > 0 && group.kind === "invalid" && key in group.errors,
+      ),
+  );
+  const completeSplit = fields.groups.flatMap((group, index) => {
+    const value = split[index];
+    return groups.some((g) => g.id === group.id) &&
+      value !== null &&
+      value !== undefined
+      ? [value]
+      : [];
+  });
+  const splitTotal = completeSplit.reduce((sum, value) => sum + value, 0);
+  const intendedSplit = completeSplit.flatMap((value) => {
+    const fraction = toFraction(value / splitTotal);
+    return fraction === null ? [] : [fraction];
+  });
   if (
-    Object.keys(errors).length ||
+    blockingErrors.length ||
+    groups[0]?.id !== "A" ||
+    groups.length < 2 ||
+    intendedSplit.length !== groups.length ||
     trafficShare === null ||
     referenceLift === null
   )

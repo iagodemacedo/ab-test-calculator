@@ -1,0 +1,4 @@
+{"route":"/pt/analise","device":"desktop","version":"13.5.0","scores":{"performance":100,"accessibility":100,"best-practices":100},"errors":[],"metrics":{"fcp":391.09900000000005,"lcp":431.09900000000005,"tbt":0,"cls":0.0058139222711390826}}
+{"route":"/pt/analise","device":"mobile","version":"13.5.0","scores":{"performance":100,"accessibility":100,"best-practices":100},"errors":[],"metrics":{"fcp":1136.612,"lcp":1383.9180000000001,"tbt":71,"cls":0.0007409605816461796}}
+{"route":"/pt/pre-teste","device":"desktop","version":"13.5.0","scores":{"performance":100,"accessibility":100,"best-practices":100},"errors":[],"metrics":{"fcp":354.10650000000004,"lcp":414.10650000000004,"tbt":0,"cls":0.002111105626990885}}
+{"route":"/pt/pre-teste","device":"mobile","version":"13.5.0","scores":{"performance":100,"accessibility":100,"best-practices":100},"errors":[],"metrics":{"fcp":985.6659999999999,"lcp":1416.9989999999998,"tbt":13.5,"cls":0.00008193143780194183}}

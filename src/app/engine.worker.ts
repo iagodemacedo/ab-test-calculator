@@ -2,9 +2,20 @@ import { rate } from "../stats/ztest";
 import { analyze, planPretest, toPlan } from "../stats";
 import type { EngineRequest, EngineResponse } from "./engine-protocol";
 
-self.onmessage = (event: MessageEvent<EngineRequest>) => {
+self.onmessage = async (event: MessageEvent<EngineRequest>) => {
   const { id, analysis, pretest, settings, selectedWeek } = event.data;
   const result = analysis ? analyze(analysis, settings) : null;
+  if (result?.kind === "ok" && event.data.incompleteGroups.length) {
+    const fingerprint = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(JSON.stringify(event.data.incompleteGroups)),
+    );
+    result.inputHash +=
+      ":" +
+      Array.from(new Uint8Array(fingerprint), (byte) =>
+        byte.toString(16).padStart(2, "0"),
+      ).join("");
+  }
   const planning = pretest ? planPretest(pretest, settings) : null;
   const plan =
     pretest && planning?.kind === "ok"

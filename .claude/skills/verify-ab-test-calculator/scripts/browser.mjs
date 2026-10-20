@@ -158,6 +158,20 @@ const commands = {
       out({ ok: true, url: page.url() });
     });
   },
+  async wait() {
+    await withPage(async (page) => {
+      await locator(page).first().waitFor({ state: "visible" });
+      await afterAction(page);
+      out({ ok: true });
+    });
+  },
+  async hover() {
+    await withPage(async (page) => {
+      await locator(page).first().hover();
+      await afterAction(page);
+      out({ ok: true });
+    });
+  },
   async fill() {
     if (flags.value === undefined) throw new Error("fill needs --value");
     await withPage(async (page) => {
@@ -170,7 +184,8 @@ const commands = {
     const key = positional[0];
     if (!key) throw new Error("press needs a key, e.g. Tab or Enter");
     await withPage(async (page) => {
-      await page.keyboard.press(key);
+      if (flags.role || flags.label || flags.text || flags.testid || flags.css) await locator(page).first().press(key);
+      else await page.keyboard.press(key);
       await afterAction(page);
       out({ ok: true });
     });
@@ -221,8 +236,30 @@ const commands = {
     if (!path) throw new Error("screenshot needs --path <file.png>");
     await withPage(async (page) => {
       ensureDir(path);
-      await page.screenshot({ path, fullPage: flags.full === true || flags.full === "true" });
+      const target = flags.role || flags.label || flags.text || flags.testid || flags.css ? locator(page).first() : null;
+      if (target) {
+        await target.evaluate((element) => element.scrollIntoView({ block: "center" }));
+        await target.screenshot({ path });
+      }
+      else {
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.screenshot({ path, fullPage: flags.full === true || flags.full === "true" });
+      }
       out({ ok: true, path, url: page.url() });
+    });
+  },
+  async layout() {
+    await withPage(async (page) => {
+      const value = await locator(page).first().evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return { width: bounds.width, height: bounds.height, clientWidth: element.clientWidth,
+          scrollWidth: element.scrollWidth, text: element.textContent,
+          letterSpacing: style.letterSpacing, opacity: style.opacity,
+          colors: [...element.querySelectorAll("path[stroke]")].map((path) => path.getAttribute("stroke")),
+          shadedAreas: element.querySelectorAll('path[fill-opacity="0.18"]').length };
+      });
+      out({ ok: true, ...value });
     });
   },
   async network() {

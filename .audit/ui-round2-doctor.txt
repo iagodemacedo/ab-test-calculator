@@ -1,0 +1,9 @@
+run r20261020-170428-1178412  mode=app  url=http://127.0.0.1:33187
+PASS  app process            pid 1178567
+PASS  port owned by run      port 33187 held by pid 1178614 (our process group)
+PASS  page /pt/analise       200
+PASS  page /en/analysis      200
+PASS  build revision         92b345e (dirty files at launch: 9)
+PASS  api /api/tldr route    GET -> 405 (route exists)
+PASS  cloudflare auth        token valid (Workers AI binding runs remotely)
+SKIP  browser (CDP)          not started (ctl browser start)

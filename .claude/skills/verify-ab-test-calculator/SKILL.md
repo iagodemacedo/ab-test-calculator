@@ -7,7 +7,7 @@ description: Launch AB Test Calculator (Astro static site + /api/tldr Cloudflare
 
 Drives the real app: the built static pages and the `/api/tldr` Worker served together by the local Cloudflare dev server, opened in headless Chromium, and operated by accessible role and name. All commands go through `scripts/ctl` (run from the repo root as `.claude/skills/verify-ab-test-calculator/scripts/ctl`, written `ctl` below).
 
-> **Status (2026-10-20): app launch and calculator journeys verified.** Real app runs proved launch, doctor, hydration, analysis, planning, sharing, locale/theme and fallback. See `.audit/ui-report.md` for run IDs and remaining gaps. The single real TL;DR rendered, but its rule-title assertion failed before the stale step; the UI fix has unit coverage and that live journey remains unverified.
+> **Status (2026-10-20): round 2 verified.** Run `r20261020-170428-1178412` passed every feature journey, including one real TL;DR, canonical rule titles, severity checks and both stale paths. Lighthouse scored 100 in performance, accessibility and best practices for both Portuguese calculator routes on desktop and mobile. See `.audit/ui-round2-report.md` for evidence and limits.
 
 Product truth lives in `PRD.md`, `ROUTES.md` and `DESIGN.md` at the repo root. The feature map in `features/` turns them into journeys.
 
@@ -67,12 +67,14 @@ ctl browser screenshot --path "$EV/analysis/results.png" [--full]
 |---|---|
 | `start [--lang pt-BR]` | launch headless Chromium for this run (Playwright headless shell; the full Chromium build lacks system libraries here). `--lang` sets the UI language and `Accept-Language` for the whole run |
 | `goto <path>` | navigate; `--wait-ready false` skips the hydration wait (404 page, redirects) |
-| `click`, `fill`, `press <Key>` | user actions |
+| `click`, `fill`, `press <Key>`, `hover` | user actions |
 | `text`, `value`, `attr --attr <name>`, `url` | read what the user sees |
 | `clipboard` | read the clipboard after "Salvar e compartilhar link" |
 | `storage` | read-only list of `localStorage` keys and sizes (proves the local draft exists or was cleared) |
 | `snapshot --path f.aria.txt` | ARIA snapshot of the page or of a target |
-| `screenshot --path f.png [--viewport 390x844]` | screenshot at the specified viewport |
+| `screenshot --path f.png [--viewport 390x844]` | screenshot at the specified viewport; a target captures only that element |
+| `wait --css <selector>` | wait for a visible matching element |
+| `layout --css <selector>` | read-only dimensions, scroll width, text, opacity and chart marks |
 | `network --path f.json` | reload and record every request with its body (proves what leaves the browser) |
 
 Targets: `--role <role> --name <accessible name>` (preferred), `--label <label>`, `--text <text>`, `--testid <id>`, `--css <selector>` (last resort, e.g. `--css html` to read `data-theme`); add `--exact` for exact name match. After any action: `--wait-text`, `--wait-gone`, `--wait-url`. `--block <path>` aborts matching requests during that one command (used to force the TL;DR fallback; a failed network request is a real production condition). `--record <file.json>` saves every request (method, URL, body) made during that one command, which is how the TL;DR payload is proven. `--color-scheme light|dark` emulates the OS theme for that command. `--timeout <ms>` defaults to 10000. `--wait-text` waits for a visible match, so text inside a closed explanation does not block it. `--viewport WIDTHxHEIGHT` sets the viewport for a command.

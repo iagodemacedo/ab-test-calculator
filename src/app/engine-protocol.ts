@@ -1,3 +1,5 @@
+import type { GroupFields } from "./state";
+
 import type {
   AnalysisInput,
   GroupData,
@@ -12,6 +14,7 @@ export interface EngineRequest {
   id: number;
   analysis: AnalysisInput | null;
   groups: GroupData[];
+  incompleteGroups: GroupFields[];
   pretest: PretestInput | null;
   settings: Settings;
   selectedWeek: number | null;

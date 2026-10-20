@@ -85,6 +85,7 @@ def invalid():
 
 def slots():
     example()
+    browser('screenshot', '--css', '.stat.hero', '--path', str(ev / 'hero-spacing.png'), '--viewport', '1440x1000')
     for _ in range(3): click('button', 'Adicionar variante')
     marker = '.group-name:has(input[aria-label="Nome do grupo D"]) .series-marker'
     before = browser('attr', '--css', marker, '--attr', 'style')['value']
@@ -144,7 +145,7 @@ def revenue():
     result = text()
     check('$' in result and '41.142,86' in result, result)
     snapshot('revenue-usd')
-    browser('click', '--css', 'figure.chart-frame button')
+    browser('click', '--css', 'figure.chart-frame:has(> h3:text-is("Intervalos do lift")) button')
     snapshot('interval-table')
     browser('click', '--css', 'figure.chart-frame:last-of-type button')
     snapshot('revenue-table')

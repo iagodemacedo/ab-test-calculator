@@ -170,7 +170,19 @@ export function Stat({
   return (
     <div class={`stat ${hero ? "hero" : ""} ${negative ? "negative" : ""}`}>
       <span class="stat-label">{label}</span>
-      <span class="stat-value">{value}</span>
+      <span class="stat-value">
+        {hero
+          ? value
+              .split(/([,.])/)
+              .map((part) =>
+                part === "," || part === "." ? (
+                  <span class="stat-decimal">{part}</span>
+                ) : (
+                  part
+                ),
+              )
+          : value}
+      </span>
       {note && <span class="stat-note">{note}</span>}
     </div>
   );
