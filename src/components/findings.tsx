@@ -22,6 +22,7 @@ export function ruleFindings(
 }
 export function Findings({ findings, t }: { findings: TldrFinding[]; t: Ui }) {
   const order = { critical: 0, warning: 1, info: 2 };
+  const ruleOrder = Object.keys(RULE_SEVERITY);
   const sorted = findings
     .map((f) =>
       f.source === "ai" && f.severity === "critical"
@@ -31,7 +32,13 @@ export function Findings({ findings, t }: { findings: TldrFinding[]; t: Ui }) {
     .sort(
       (a, b) =>
         order[a.severity] - order[b.severity] ||
-        (a.source === b.source ? 0 : a.source === "rule" ? -1 : 1),
+        (a.source !== b.source
+          ? a.source === "rule"
+            ? -1
+            : 1
+          : a.source === "rule" && a.ruleId && b.ruleId
+            ? ruleOrder.indexOf(a.ruleId) - ruleOrder.indexOf(b.ruleId)
+            : 0),
     );
   return (
     <ul>

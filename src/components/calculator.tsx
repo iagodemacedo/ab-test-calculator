@@ -52,13 +52,19 @@ export default function Calculator({
   const planning = pretest.kind === "ok" ? (response?.pretest ?? null) : null;
   const ok = result?.kind === "ok" ? result : null;
   const errors = tab === "analysis" ? analysis.errors : pretest.errors;
+  const activeAlpha =
+    tab === "analysis"
+      ? ok?.alpha
+      : planning?.kind === "ok"
+        ? planning.alpha
+        : undefined;
   const context = {
     confidence: fmt.pct(state.settings.confidence, 0),
     power: fmt.pct(state.settings.power, 0),
-    alpha: fmt.pct(ok?.alpha ?? 1 - state.settings.confidence),
+    ...(activeAlpha !== undefined ? { alpha: fmt.pct(activeAlpha) } : {}),
     groups:
       tab === "analysis" ? state.analysis.groups.length : state.pretest.groups,
-    ...(ok?.variants[0]
+    ...(tab === "analysis" && ok?.variants[0]
       ? {
           probabilityToBeat: fmt.pct(
             ok.variants[0].bayes.probabilityToBeatControl,
