@@ -7,7 +7,7 @@ description: Launch AB Test Calculator (Astro static site + /api/tldr Cloudflare
 
 Drives the real app: the built static pages and the `/api/tldr` Worker served together by the local Cloudflare dev server, opened in headless Chromium, and operated by accessible role and name. All commands go through `scripts/ctl` (run from the repo root as `.claude/skills/verify-ab-test-calculator/scripts/ctl`, written `ctl` below).
 
-> **Status (2026-10-20): app launch and calculator journeys verified.** Real app runs proved launch, doctor, hydration, analysis, planning, sharing, locale/theme and fallback. See `.audit/ui-report.md` for run IDs and remaining gaps. The single real TL;DR rendered, but its rule-title assertion failed before the stale step; the UI fix has unit coverage and that live journey remains unverified.
+> **Status (2026-10-20): round 2 verified.** Run `r20261020-170428-1178412` passed every feature journey, including one real TL;DR, canonical rule titles, severity checks and both stale paths. Lighthouse scored 100 in performance, accessibility and best practices for both Portuguese calculator routes on desktop and mobile. See `.audit/ui-round2-report.md` for evidence and limits.
 
 Product truth lives in `PRD.md`, `ROUTES.md` and `DESIGN.md` at the repo root. The feature map in `features/` turns them into journeys.
 
@@ -73,6 +73,7 @@ ctl browser screenshot --path "$EV/analysis/results.png" [--full]
 | `storage` | read-only list of `localStorage` keys and sizes (proves the local draft exists or was cleared) |
 | `snapshot --path f.aria.txt` | ARIA snapshot of the page or of a target |
 | `screenshot --path f.png [--viewport 390x844]` | screenshot at the specified viewport; a target captures only that element |
+| `wait --css <selector>` | wait for a visible matching element |
 | `layout --css <selector>` | read-only dimensions, scroll width, text, opacity and chart marks |
 | `network --path f.json` | reload and record every request with its body (proves what leaves the browser) |
 

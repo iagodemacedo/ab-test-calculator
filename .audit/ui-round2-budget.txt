@@ -1,0 +1,8 @@
+ok      7.3 KB gzip  /404.html
+ok      0.7 KB gzip  /en/about.html
+ok     70.8 KB gzip  /en/analysis.html
+ok     70.8 KB gzip  /en/pre-test.html
+ok     70.8 KB gzip  /pt/analise.html
+ok     70.8 KB gzip  /pt/pre-teste.html
+ok      0.7 KB gzip  /pt/sobre.html
+budget 150 KB gzip per page
