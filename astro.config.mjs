@@ -10,11 +10,15 @@ export default defineConfig({
   build: { format: "file" },
   integrations: [preact()],
   vite: {
-    plugins: [tailwindcss(), Icons({
-      compiler: {
-        extension: 'jsx',
-        compiler: svg => `export default function Icon(props) { return (${svg.replace('<svg ', '<svg {...props} ')}); }`,
-      },
-    })],
+    plugins: [
+      tailwindcss(),
+      Icons({
+        compiler: {
+          extension: "jsx",
+          compiler: (svg) =>
+            `export default function Icon(props) { return (${svg.replace("<svg ", "<svg {...props} ")}); }`,
+        },
+      }),
+    ],
   },
 });

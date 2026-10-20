@@ -54,6 +54,13 @@ const umami = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID?.trim();
     <footer class="site-footer"><a href={routes[locale].about} data-calculator-link>{t.about} ↗</a><p>{t.privacy}</p></footer>
     <script>
       import { track } from '../app/analytics';
+      document.querySelectorAll<HTMLAnchorElement>('a[data-calculator-link], a[data-language]').forEach(link => {
+        link.addEventListener('click', event => {
+          if (document.querySelector('main.calculator') || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          link.hash = location.hash;
+          if (link.dataset.language === 'pt' || link.dataset.language === 'en') track('language_switched', { locale: link.dataset.language });
+        });
+      });
       document.getElementById('theme-toggle')?.addEventListener('click', () => {
         const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
         document.documentElement.dataset.theme = theme;

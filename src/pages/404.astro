@@ -5,9 +5,23 @@ import { ui } from '../i18n/ui';
 <Layout locale="en" page="about"><main class="methodology"><p class="metric">404</p><h1 data-error-title>{ui.en.notFound}</h1><p data-error-text>{ui.en.notFoundText}</p><div class="stack"><a data-error-analysis href="/en/analysis">{ui.en.analysis}</a><a data-error-pretest href="/en/pre-test">{ui.en.pretest}</a></div></main></Layout>
 <script>
   import { ui } from '../i18n/ui';
+  import { routes } from '../i18n/routes';
   const locale = location.pathname.startsWith('/pt') || (!location.pathname.startsWith('/en') && navigator.language.toLowerCase().startsWith('pt')) ? 'pt' : 'en';
   document.documentElement.lang = locale === 'pt' ? 'pt-BR' : 'en';
   document.title = `${ui[locale].notFound} · AB Test Calculator`;
+  document.querySelectorAll<HTMLAnchorElement>('nav [data-calculator-link]').forEach((link, index) => {
+    const tab = index === 0 ? 'analysis' : 'pretest';
+    link.textContent = ui[locale][tab];
+    link.href = routes[locale][tab];
+  });
+  const theme = document.getElementById('theme-toggle');
+  theme?.setAttribute('aria-label', ui[locale].theme);
+  const other = locale === 'pt' ? 'en' : 'pt';
+  const language = document.querySelector<HTMLAnchorElement>('[data-language]');
+  if (language) { language.textContent = other.toUpperCase(); language.href = routes[other].analysis; language.dataset.language = other; }
+  const footer = document.querySelector<HTMLAnchorElement>('footer a');
+  if (footer) { footer.textContent = ui[locale].about; footer.href = routes[locale].about; }
+  document.querySelector('footer p')?.replaceChildren(ui[locale].privacy);
   document.querySelector('[data-error-title]')?.replaceChildren(ui[locale].notFound);
   document.querySelector('[data-error-text]')?.replaceChildren(ui[locale].notFoundText);
   for (const tab of ['analysis', 'pretest'] as const) {

@@ -1,4 +1,11 @@
-import type { AnalysisInput, AnalysisResult, Plan, PretestInput, PretestResult, Settings } from '../stats/types';
+import type {
+  AnalysisInput,
+  AnalysisResult,
+  Plan,
+  PretestInput,
+  PretestResult,
+  Settings,
+} from "../stats/types";
 export interface EngineRequest {
   id: number;
   analysis: AnalysisInput | null;
