@@ -190,6 +190,42 @@ export interface RevenueResult {
   forecast: { id: GroupId; months: number[] }[]; // cumulative revenue per month of the horizon
 }
 
+/** A density over RateDistributions.x and the interval to shade under it. */
+export interface RateCurve {
+  density: number[];
+  interval: [number, number]; // Z test: confidence interval of the rate; Bayesian: credible interval
+}
+
+export interface RateDistributions {
+  x: number[]; // conversion rates, ascending, shared by every group and both methods
+  groups: {
+    id: GroupId;
+    ztest: RateCurve | null; // null when the standard error is 0 (a rate of 0% or 100%)
+    bayes: RateCurve; // posterior Beta(1 + conversions, 1 + users - conversions)
+  }[];
+}
+
+export interface LiftDensity {
+  density: number[]; // one value per bin of LiftDistributions.edges
+  massAboveZero: number; // Bayesian: equals probabilityToBeatControl
+}
+
+export interface LiftDistributions {
+  /** Bin edges in relative lift, ascending, shared by every variant and both methods. 0 is an edge whenever it is in range. */
+  edges: number[];
+  variants: {
+    id: GroupId;
+    ztest: LiftDensity | null; // normal density at each bin midpoint; null when the standard error is 0
+    bayes: LiftDensity; // histogram of the Monte Carlo lifts, normalized by all draws
+  }[];
+}
+
+/** What the CR and lift charts draw (PRD section 10). */
+export interface Distributions {
+  rate: RateDistributions;
+  lift: LiftDistributions | null; // null when the control rate is 0, as relative lift is undefined
+}
+
 export type AnalysisResult =
   | { kind: "empty" }
   | { kind: "no-conversions" }
@@ -202,6 +238,7 @@ export type AnalysisResult =
       extraDays: number | null; // null without days
       revenue: RevenueResult | null;
       findings: Finding[];
+      distributions: Distributions;
       inputHash: string; // stable hash of the inputs, seeds the Monte Carlo and the TL;DR stale check
     };
 

@@ -1,5 +1,6 @@
 // Analysis of a finished or running test (PRD sections 5 to 9).
 import { compareBayes } from "./bayes";
+import { distributions } from "./distributions";
 import { evaluateFindings } from "./findings";
 import { inputHash, posteriorSeed } from "./hash";
 import { projectRevenue } from "./revenue";
@@ -39,7 +40,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
     const fixed = zTest(control, g, design.alpha, settings.hypothesis);
     const sequential = sequentialStatus(input, sample, fixed.z, design.alpha, settings);
     const ztest = sequential ? { ...fixed, significant: sequential.crossed } : fixed;
-    const b = bayes[i]!;
+    const b = bayes.variants[i]!;
     const vz = verdictZ(ztest.significant, ztest.absoluteDiff, settings.hypothesis, achievedMde, input.referenceLift);
     const vb = verdictBayes(b.probabilityToBeatControl, settings.confidence, achievedMde, input.referenceLift);
     return {
@@ -72,6 +73,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
     extraDays,
     revenue: projectRevenue(input, groups),
     findings: evaluateFindings({ input, settings, srmPValue: srmResult.pValue, srmMismatch: srmResult.mismatch, variants }),
+    distributions: distributions(input.groups, bayes, settings.confidence),
     inputHash: inputHash(input, settings),
   };
 }

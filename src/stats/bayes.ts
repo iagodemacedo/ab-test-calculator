@@ -93,8 +93,8 @@ function select(a: Float64Array, k: number): number {
   return a[k]!;
 }
 
-/** Type 7 quantile (linear interpolation between order statistics), without a full sort. */
-function quantile(values: Float64Array, q: number): number {
+/** Type 7 quantile (linear interpolation between order statistics), without a full sort. Reorders values. */
+export function quantile(values: Float64Array, q: number): number {
   const h = (values.length - 1) * q;
   const lo = Math.floor(h);
   const below = select(values, lo);
@@ -104,8 +104,14 @@ function quantile(values: Float64Array, q: number): number {
   return below + (h - lo) * (above - below);
 }
 
-/** One BayesResult per variant (groups[1..]); groups[0] is the control. */
-export function compareBayes(groups: readonly Counts[], seed: Hash128, confidence: number): BayesResult[] {
+export interface BayesComparison {
+  variants: BayesResult[]; // groups[1..]
+  rateIntervals: [number, number][]; // credible interval of each group's rate, groups[0..]
+  relativeLifts: Float64Array[]; // (variant - control) / control per draw, one array per variant
+}
+
+/** groups[0] is the control. */
+export function compareBayes(groups: readonly Counts[], seed: Hash128, confidence: number): BayesComparison {
   const uniform = sfc32(seed);
   const gamma = gammaSampler(uniform, normalSource(uniform));
   const draws = groups.map((g) => {
@@ -129,7 +135,8 @@ export function compareBayes(groups: readonly Counts[], seed: Hash128, confidenc
   const control = draws[0]!;
   const controlRate = groups[0]!.conversions / groups[0]!.users;
   const tail = (1 - confidence) / 2;
-  return draws.slice(1).map((variant, v) => {
+  const relativeLifts: Float64Array[] = [];
+  const variants = draws.slice(1).map((variant, v): BayesResult => {
     let wins = 0;
     let loss = 0;
     const lift = new Float64Array(DRAWS);
@@ -140,6 +147,7 @@ export function compareBayes(groups: readonly Counts[], seed: Hash128, confidenc
       else loss += c - x;
       lift[i] = (x - c) / c;
     }
+    relativeLifts.push(lift);
     const expectedLossAbsolute = loss / DRAWS;
     return {
       probabilityToBeatControl: wins / DRAWS,
@@ -149,4 +157,7 @@ export function compareBayes(groups: readonly Counts[], seed: Hash128, confidenc
       credibleIntervalRelative: controlRate > 0 ? [quantile(lift, tail), quantile(lift, 1 - tail)] : null,
     };
   });
+  // Last, because quantile reorders the draws and the loops above pair them by index.
+  const rateIntervals = draws.map((d): [number, number] => [quantile(d, tail), quantile(d, 1 - tail)]);
+  return { variants, rateIntervals, relativeLifts };
 }
