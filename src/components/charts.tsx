@@ -10,6 +10,7 @@ import type {
 import type { Formatter } from "../app/format";
 import type { Ui } from "../i18n/ui";
 import { Button } from "./controls";
+import { DistributionCharts } from "./distributions";
 
 type Series = { id: GroupId; name: string; points: { x: number; y: number }[] };
 const color = (id: GroupId) => `var(--series-${GROUP_IDS.indexOf(id) + 1})`;
@@ -47,8 +48,18 @@ export function LineChart({
   const minX = Math.min(...points.map((p) => p.x)),
     maxX = Math.max(...points.map((p) => p.x));
   const minY = Math.min(0, ...points.map((p) => p.y));
+  const top = Math.max(warningLine ?? 0, ...points.map((p) => p.y), 0.0001);
+  const roughStep = (top - minY) / 4;
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
+  const step =
+    ([1, 2, 2.5, 5, 10].find((n) => n * magnitude >= roughStep) ?? 10) *
+    magnitude;
   const maxY =
-    Math.max(warningLine ?? 0, ...points.map((p) => p.y), 0.0001) * 1.12;
+    warningLine === undefined ? top * 1.12 : Math.ceil(top / step) * step;
+  const yTicks =
+    warningLine === undefined
+      ? [0, 1, 2, 3, 4].map((i) => minY + ((maxY - minY) * i) / 4)
+      : Array.from({ length: Math.round(maxY / step) + 1 }, (_, i) => i * step);
   const x = (v: number) => L + ((v - minX) / (maxX - minX || 1)) * (W - L - R);
   const y = (v: number) => H - B - ((v - minY) / (maxY - minY)) * (H - B - T);
   const xs = [...new Set(points.map((p) => p.x))].sort((a, b) => a - b);
@@ -118,13 +129,12 @@ export function LineChart({
                   stroke="var(--muted)"
                   stroke-dasharray="4 4"
                 />
-                <text x={W - R} y={y(warningLine) - 6} text-anchor="end">
+                <text x={W - R} y={T + 16} text-anchor="end">
                   {t.above10}
                 </text>
               </>
             )}
-            {[0, 1, 2, 3, 4].map((i) => {
-              const value = minY + ((maxY - minY) * i) / 4;
+            {yTicks.map((value, i) => {
               return (
                 <g key={i}>
                   <line
@@ -261,7 +271,7 @@ export function MdeChart({
       ]}
       xLabel={t.week}
       formatX={fmt.int}
-      formatY={(n) => fmt.pct(n, 1)}
+      formatY={(n) => fmt.pct(n, Number.isInteger(n * 100) ? 0 : 1)}
       warningLine={0.1}
       selectedX={fields.selectedWeek ?? fields.horizonWeeks}
       t={t}
@@ -305,6 +315,7 @@ export function AnalysisCharts({
     .filter((value) => value === 0 || Math.abs(x(value) - x(0)) >= 72);
   return (
     <>
+      <DistributionCharts result={result} fields={fields} fmt={fmt} t={t} />
       <figure class="chart-frame">
         <h3>{t.intervalsChart}</h3>
         <div class="chart-legend">
