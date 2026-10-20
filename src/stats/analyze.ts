@@ -7,7 +7,7 @@ import { projectRevenue } from "./revenue";
 import { minimumDetectableEffect, sampleSize, testDesign } from "./sample-size";
 import { boundaryAtLook } from "./sequential";
 import { srm } from "./srm";
-import type { AnalysisInput, AnalysisResult, GroupStats, RelativeLift, SequentialStatus, Settings, VariantResult } from "./types";
+import type { AnalysisInput, AnalysisResult, GroupStats, Method, RelativeLift, SequentialStatus, Settings, VariantResult } from "./types";
 import { verdictBayes, verdictZ } from "./verdict";
 import { rate, standardError, zTest } from "./ztest";
 
@@ -32,7 +32,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
   const bayes = compareBayes(input.groups, posteriorSeed(input.groups), settings.confidence);
   const requiredSamplePerVariant = Math.ceil(sampleSize(controlRate, input.referenceLift, design));
   // The sequential toggle only exists for the Z test (PRD section 4), so it governs the verdict.
-  const zTestGoverns = input.method === "ztest" || input.sequential.enabled;
+  const governingMethod: Method = input.method === "ztest" || input.sequential.enabled ? "ztest" : "bayesian";
 
   const variants: VariantResult[] = input.groups.slice(1).map((g, i) => {
     const sample = Math.min(control.users, g.users);
@@ -47,7 +47,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
       id: g.id,
       ztest,
       bayes: b,
-      verdict: zTestGoverns ? vz : vb,
+      verdict: governingMethod === "ztest" ? vz : vb,
       verdictZ: vz,
       verdictBayes: vb,
       achievedMde,
@@ -66,6 +66,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
 
   return {
     kind: "ok",
+    governingMethod,
     alpha: design.alpha,
     groups,
     variants,

@@ -188,7 +188,7 @@ export interface VariantResult {
   id: GroupId;
   ztest: ZTestResult;
   bayes: BayesResult;
-  verdict: Verdict; // for the selected method
+  verdict: Verdict; // for the governing method of the analysis
   verdictZ: Verdict;
   verdictBayes: Verdict;
   achievedMde: RelativeLift;
@@ -243,6 +243,8 @@ export type AnalysisResult =
   | { kind: "no-conversions" }
   | {
       kind: "ok";
+      /** The method behind each verdict: the selected one, or the Z test whenever the test is sequential. */
+      governingMethod: Method;
       alpha: number;
       groups: GroupStats[];
       variants: VariantResult[]; // one per non-control group

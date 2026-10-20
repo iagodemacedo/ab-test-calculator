@@ -6,7 +6,8 @@ import type { AnalysisInput, AnalysisResult, Locale } from "../stats/types";
 import type { ContentPack } from "../i18n/content/types";
 import type { Formatter } from "../app/format";
 import type { Ui } from "../i18n/ui";
-import { parseTldrResponse, tldrRequest, turnstileToken } from "../app/tldr";
+import { parseTldrResponse, turnstileToken } from "../app/tldr";
+import { toTldrRequest } from "../shared/tldr-request";
 import { track } from "../app/analytics";
 import { Button } from "./controls";
 import { Findings, ruleFindings } from "./findings";
@@ -80,7 +81,13 @@ export function TldrBlock({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
-          tldrRequest(state, input, result, locale, verification.token),
+          toTldrRequest(
+            result,
+            input,
+            state.settings,
+            locale,
+            verification.token,
+          ),
         ),
         signal: current.signal,
       });
