@@ -1,12 +1,13 @@
 import { toFraction, toLift } from "../stats";
 import type {
   AnalysisInput,
+  GroupData,
   Currency,
   Locale,
   Plan,
   PretestInput,
 } from "../stats";
-import type { AnalysisFields, PretestFields } from "./state";
+import type { AnalysisFields, GroupFields, PretestFields } from "./state";
 
 export type FieldError =
   | "required"
@@ -61,6 +62,27 @@ function reader(locale: Locale) {
   };
   return { errors, number };
 }
+export function parseGroup(
+  fields: GroupFields,
+  locale: Locale,
+): Parsed<GroupData> {
+  const { errors, number } = reader(locale);
+  const users = number(`${fields.id}.users`, fields.users, 1, true);
+  const conversions = number(
+    `${fields.id}.conversions`,
+    fields.conversions,
+    0,
+    true,
+  );
+  if (conversions > users) errors[`${fields.id}.conversions`] = "exceeds";
+  if (Object.keys(errors).length) return { kind: "invalid", errors };
+  return {
+    kind: "ok",
+    errors,
+    input: { id: fields.id, name: fields.name, users, conversions },
+  };
+}
+
 export function parsePretest(
   fields: PretestFields,
   locale: Locale,
@@ -128,11 +150,10 @@ export function parseAnalysis(
   const referenceLift = toLift(
     number("referenceLiftPct", fields.referenceLiftPct, Number.MIN_VALUE) / 100,
   );
-  const groups = fields.groups.map((g) => {
-    const users = number(`${g.id}.users`, g.users, 1, true);
-    const conversions = number(`${g.id}.conversions`, g.conversions, 0, true);
-    if (conversions > users) errors[`${g.id}.conversions`] = "exceeds";
-    return { id: g.id, name: g.name, users, conversions };
+  const parsedGroups = fields.groups.map((group) => parseGroup(group, locale));
+  const groups = parsedGroups.flatMap((parsed) => {
+    Object.assign(errors, parsed.errors);
+    return parsed.kind === "ok" ? [parsed.input] : [];
   });
   const split = fields.groups.map((g) =>
     toFraction(

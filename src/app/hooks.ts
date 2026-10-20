@@ -17,7 +17,7 @@ import {
   saveDraft,
 } from "./codec";
 import { routes } from "../i18n/routes";
-import { parseAnalysis, parsePretest } from "./parse";
+import { parseAnalysis, parseGroup, parsePretest } from "./parse";
 import type { EngineRequest, EngineResponse } from "./engine-protocol";
 
 export function useCalculatorState(
@@ -103,6 +103,14 @@ export function useCalculatorState(
   return { state, dispatch, ready, notice, setNotice };
 }
 export function useEngine(state: AppState, locale: Locale, ready: boolean) {
+  const groups = useMemo(
+    () =>
+      state.analysis.groups.flatMap((group) => {
+        const parsed = parseGroup(group, locale);
+        return parsed.kind === "ok" ? [parsed.input] : [];
+      }),
+    [state.analysis.groups, locale],
+  );
   const analysis = useMemo(
     () => parseAnalysis(state.analysis, state.currency, state.plan, locale),
     [state.analysis, state.currency, state.plan, locale],
@@ -148,13 +156,21 @@ export function useEngine(state: AppState, locale: Locale, ready: boolean) {
     const request: EngineRequest = {
       id,
       analysis: analysis.kind === "ok" ? analysis.input : null,
+      groups,
       pretest: pretest.kind === "ok" ? pretest.input : null,
       selectedWeek: state.pretest.selectedWeek,
       settings: state.settings,
     };
     pendingState.current = state;
     worker.current.postMessage(request);
-  }, [analysis, pretest, state.settings, state.pretest.selectedWeek, ready]);
+  }, [
+    analysis,
+    pretest,
+    groups,
+    state.settings,
+    state.pretest.selectedWeek,
+    ready,
+  ]);
   const pending =
     busy ||
     !computedState ||

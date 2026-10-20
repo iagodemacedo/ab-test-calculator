@@ -1,3 +1,4 @@
+import { rate } from "../stats/ztest";
 import { analyze, planPretest, toPlan } from "../stats";
 import type { EngineRequest, EngineResponse } from "./engine-protocol";
 
@@ -45,6 +46,10 @@ self.onmessage = (event: MessageEvent<EngineRequest>) => {
   const response: EngineResponse = {
     id,
     analysis: result,
+    groupRates: event.data.groups.map((group) => ({
+      id: group.id,
+      rate: rate(group),
+    })),
     pretest: planning,
     details,
     plan,

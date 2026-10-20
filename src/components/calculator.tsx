@@ -335,6 +335,7 @@ export default function Calculator({
                     dispatch={dispatch}
                     errors={analysis.errors}
                     result={result}
+                    rates={response?.groupRates ?? []}
                     fmt={fmt}
                     t={t}
                   />

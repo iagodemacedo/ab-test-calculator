@@ -52,6 +52,9 @@ def fixture(srm=False):
     fill('Dias de teste', 14)
     fill('Usuários (Controle)', 50000 if srm else 80000)
     fill('Conversões (Controle)', 1000 if srm else 1600)
+    control = browser('text', '--role', 'row', '--name', 'Controle')['text']
+    check('2,00%' in control, control)
+    snap('analysis', 'control-before-variant')
     fill('Usuários (Variante B)', 48500 if srm else 80000)
     fill('Conversões (Variante B)', 1000 if srm else 1696)
 def journey(name, fn):
@@ -227,7 +230,7 @@ def locale_theme():
 
 
 def tldr():
-    browser('goto', '/pt/analise')
+    click('link', 'Análise do teste', '--wait-url', '/pt/analise')
     fixture(srm=True)
     snap('tldr', 'before')
     fragment = urlsplit(browser('url')['url']).fragment

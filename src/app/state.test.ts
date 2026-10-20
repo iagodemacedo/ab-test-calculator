@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canUsePlan, initialState, reducer } from "./reducer";
-import { parseAnalysis, parsePretest, readNumber } from "./parse";
+import { parseAnalysis, parseGroup, parsePretest, readNumber } from "./parse";
 import { planPretest, toPlan } from "../stats";
 import { formatters } from "./format";
 
@@ -139,5 +139,27 @@ it("keeps an undetectable rate-ceiling plan out of analysis and shared state", (
   if (result.kind !== "ok") throw new Error("Mode A must show its MDE table");
   expect(canUsePlan(toPlan(parsed.input, result, null, new Date()))).toBe(
     false,
+  );
+});
+
+it("parses a complete group before the other groups are filled", () => {
+  const state = initialState("pt");
+  const control = {
+    id: "A" as const,
+    name: "Controle",
+    users: "80000",
+    conversions: "1600",
+    splitPct: "50",
+  };
+  state.analysis.groups[0] = control;
+  const parsed = parseGroup(control, "pt");
+  expect(parsed.kind === "ok" && parsed.input).toEqual({
+    id: "A",
+    name: "Controle",
+    users: 80000,
+    conversions: 1600,
+  });
+  expect(parseAnalysis(state.analysis, state.currency, null, "pt").kind).toBe(
+    "invalid",
   );
 });

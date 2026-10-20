@@ -1,7 +1,7 @@
 import IconPlus from "~icons/ph/plus";
 import IconX from "~icons/ph/x";
 import { GROUP_IDS } from "../stats/types";
-import type { AnalysisResult } from "../stats/types";
+import type { AnalysisResult, GroupStats } from "../stats/types";
 import type { Action, AppState } from "../app/state";
 import type { FieldError } from "../app/parse";
 import type { Formatter } from "../app/format";
@@ -14,6 +14,7 @@ export function Groups({
   dispatch,
   errors,
   result,
+  rates,
   fmt,
   t,
 }: {
@@ -21,6 +22,7 @@ export function Groups({
   dispatch: (action: Action) => void;
   errors: Record<string, FieldError>;
   result: AnalysisResult | null;
+  rates: Pick<GroupStats, "id" | "rate">[];
   fmt: Formatter;
   t: Ui;
 }) {
@@ -47,8 +49,8 @@ export function Groups({
           <tbody>
             {state.analysis.groups.map((g) => {
               const stat =
-                result?.kind === "ok"
-                  ? result.groups.find((s) => s.id === g.id)
+                !errors[`${g.id}.users`] && !errors[`${g.id}.conversions`]
+                  ? rates.find((s) => s.id === g.id)
                   : undefined;
               const variant =
                 result?.kind === "ok"
