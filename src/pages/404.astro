@@ -14,6 +14,8 @@ import { ui } from '../i18n/ui';
     link.textContent = ui[locale][tab];
     link.href = routes[locale][tab];
   });
+  const brand = document.querySelector<HTMLAnchorElement>('.brand');
+  if (brand) brand.href = routes[locale].analysis;
   const theme = document.getElementById('theme-toggle');
   theme?.setAttribute('aria-label', ui[locale].theme);
   const other = locale === 'pt' ? 'en' : 'pt';

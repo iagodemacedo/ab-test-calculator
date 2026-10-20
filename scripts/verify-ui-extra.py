@@ -59,6 +59,7 @@ def entries():
         snapshot(path.split('/')[-1])
     response = browser('goto', '/pt/nao-existe', '--wait-ready', 'false')
     check(response['status'] == 404 and 'Página não encontrada' in response['title'], response)
+    check(browser('attr', '--role', 'link', '--name', 'AB Test Calculator', '--exact', '--attr', 'href')['value'] == '/pt/analise', '404 brand link changed locale')
     snapshot('404-pt')
     browser('goto', '/pt/analise')
 
