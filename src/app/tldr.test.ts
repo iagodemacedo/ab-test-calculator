@@ -83,3 +83,22 @@ it("keeps rule titles stable when the AI renames them", () => {
   );
   expect(summary?.findings[0]?.title).toBe(rule.title);
 });
+
+it("restores missing occurrences of a rule applying to multiple variants", () => {
+  const first = {
+    source: "rule" as const,
+    ruleId: "underpowered" as const,
+    severity: "warning" as const,
+    title: "Insufficient sample",
+    explanation: "Variant B needs more data.",
+    action: "Continue.",
+  };
+  const second = { ...first, explanation: "Variant C needs more data." };
+  const summary = parseTldrResponse(
+    { tldr: "A summary.", findings: [first] },
+    [first, second],
+    "hash",
+    "en",
+  );
+  expect(summary?.findings).toEqual([first, second]);
+});

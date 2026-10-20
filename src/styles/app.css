@@ -1032,3 +1032,30 @@
     margin-bottom: 4px;
   }
 }
+@layer components {
+  .progress {
+    overflow: hidden;
+    background: var(--rule);
+  }
+  .progress::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .progress::after {
+    width: 30%;
+    animation: progress-travel 1200ms linear infinite;
+  }
+  @keyframes progress-travel {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(334%);
+    }
+  }
+}

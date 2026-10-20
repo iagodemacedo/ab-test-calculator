@@ -105,9 +105,14 @@ export function parseTldrResponse(
       if (rule) finding.title = rule.title;
     }
   }
-  for (const rule of rules)
-    if (!returned.some((f) => f.source === "rule" && f.ruleId === rule.ruleId))
-      returned.push(rule);
+  const remaining = returned.filter((finding) => finding.source === "rule");
+  for (const rule of rules) {
+    const index = remaining.findIndex(
+      (finding) => finding.ruleId === rule.ruleId,
+    );
+    if (index < 0) returned.push(rule);
+    else remaining.splice(index, 1);
+  }
   return {
     tldr: value.tldr,
     findings: returned,

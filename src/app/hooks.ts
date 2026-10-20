@@ -63,15 +63,14 @@ export function useCalculatorState(locale: Locale) {
       try {
         saveDraft(localStorage, state, locale);
       } catch {}
-      if (location.hash.startsWith("#s="))
-        void encode(
-          state,
-          locale,
-          location.origin.length + location.pathname.length,
-        ).then((link) => {
-          if (revision.current === at)
-            history.replaceState(null, "", location.pathname + link.fragment);
-        });
+      void encode(
+        state,
+        locale,
+        location.origin.length + location.pathname.length,
+      ).then((link) => {
+        if (revision.current === at)
+          history.replaceState(null, "", location.pathname + link.fragment);
+      });
     }, 500);
     return () => clearTimeout(timer);
   }, [state, ready, locale]);
