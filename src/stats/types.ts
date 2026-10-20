@@ -82,6 +82,7 @@ export type PretestResult =
   | { kind: "invalid"; reason: "no-conversions" | "lift-exceeds-100-percent" }
   | {
       kind: "ok";
+      settings: Settings; // the settings this plan was computed with; toPlan reuses them
       baselineRate: number;
       alpha: number; // after Bonferroni
       weeks: WeekRow[]; // Mode A
