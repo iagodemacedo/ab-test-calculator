@@ -129,7 +129,7 @@ async function withPage(fn) {
 }
 
 async function afterAction(page) {
-  if (flags["wait-text"]) await page.getByText(flags["wait-text"], { exact: false }).first().waitFor({ state: "visible" });
+  if (flags["wait-text"]) await page.getByText(flags["wait-text"], { exact: false }).filter({ visible: true }).first().waitFor({ state: "visible" });
   if (flags["wait-gone"]) await page.getByText(flags["wait-gone"], { exact: false }).first().waitFor({ state: "hidden" });
   if (flags["wait-url"]) await page.waitForURL((u) => u.toString().includes(flags["wait-url"]));
 }
