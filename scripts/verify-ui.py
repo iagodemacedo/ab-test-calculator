@@ -6,6 +6,7 @@ import os
 import re
 import subprocess
 import time
+from urllib.parse import unquote, urlsplit
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -214,7 +215,11 @@ def tldr():
     browser('goto', '/pt/analise')
     fixture(srm=True)
     snap('tldr', 'before')
-    click('button', 'Gerar TL;DR', '--block', '/api/tldr', '--wait-text', 'TL;DR indisponível', '--timeout', '30000')
+    fragment = urlsplit(browser('url')['url']).fragment
+    click('button', 'Gerar TL;DR', '--block', '/api/tldr', '--wait-text', 'TL;DR indisponível', '--timeout', '30000', '--record', str(ev / 'tldr' / 'fallback-requests.json'))
+    requests = json.loads((ev / 'tldr' / 'fallback-requests.json').read_text())
+    sent = unquote(unquote(json.dumps(requests)))
+    check('#s=' not in sent and (not fragment or fragment not in sent), 'Fragment sent during Turnstile or TLDR request')
     fallback = text('TL;DR')
     check('Possível Sample Ratio Mismatch' in fallback and 'Crítico' in fallback, fallback)
     snap('tldr', 'fallback', 'TL;DR')

@@ -575,7 +575,7 @@ export default function Calculator({
             id="results"
             role="region"
             aria-label={t.results}
-            aria-busy={busy}
+            aria-busy={busy && !error}
           >
             <div class="results-heading">
               <h2>{t.results}</h2>
@@ -594,7 +594,7 @@ export default function Calculator({
                 />
               )}
             </div>
-            {busy && (
+            {busy && !error && (
               <div class="progress" role="status" aria-label={t.computing} />
             )}
             {error && <p role="alert">{t.computeError}</p>}

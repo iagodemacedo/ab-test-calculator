@@ -129,5 +129,13 @@ export function useEngine(state: AppState, locale: Locale, ready: boolean) {
     pendingState.current = state;
     worker.current.postMessage(request);
   }, [analysis, pretest, state.settings, state.pretest.selectedWeek, ready]);
-  return { analysis, pretest, response, computedState, busy, error };
+  const pending =
+    busy ||
+    !computedState ||
+    computedState.analysis !== state.analysis ||
+    computedState.pretest !== state.pretest ||
+    computedState.settings !== state.settings ||
+    computedState.currency !== state.currency ||
+    computedState.plan !== state.plan;
+  return { analysis, pretest, response, computedState, busy: pending, error };
 }
