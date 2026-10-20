@@ -45,3 +45,11 @@ Use the exact names the feature files use, in pt on `/pt` pages: tabs `Análise 
 ## Report back (concise)
 
 Commits, the run id of the final verification run, a table of journeys with PASS / FAIL / NOT RUN and the reason, the budget output, every contract you could not follow and why, and anything unfinished.
+
+## Facts from the merged engine (read before item 10)
+
+- `analyze` median: about 13 ms with 2 groups, about 34 ms with 5 groups (Node, 4 cores). `planPretest` with weekly looks over a long plan reaches 164 ms. Run both engine calls in a module Web Worker from the start, keep the last result on screen while a new one computes, and drop stale responses by request id.
+- `PretestResult` (kind `ok`) now carries `settings`, used by `toPlan`.
+- The Monte Carlo seed depends only on users and conversions, so P(vencer) does not move when method, revenue or names change. `inputHash` covers every input and drives the TL;DR stale seal.
+- `stopped_early` fires only when a plan exists. `seq_not_crossed` stays silent at the final look. With the sequential toggle on, the verdict follows the Z test boundary.
+- With 0 control conversions, `extraDays` is `Infinity`: render it as "—" with the explanation, never as a number.
