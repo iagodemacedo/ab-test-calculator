@@ -1,0 +1,10 @@
+npm notice run budget
+npm notice run node scripts/js-budget.mjs
+ok      7.1 KB gzip  /404.html
+ok      0.7 KB gzip  /en/about.html
+ok     67.5 KB gzip  /en/analysis.html
+ok     67.5 KB gzip  /en/pre-test.html
+ok     67.5 KB gzip  /pt/analise.html
+ok     67.5 KB gzip  /pt/pre-teste.html
+ok      0.7 KB gzip  /pt/sobre.html
+budget 150 KB gzip per page
