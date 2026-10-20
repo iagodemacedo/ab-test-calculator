@@ -5,6 +5,8 @@ export interface CounterStorage {
     get(key: string): Promise<Counter | undefined>;
     put(key: string, value: Counter): Promise<void>;
   }) => Promise<T>): Promise<T>;
+  setAlarm(scheduledTime: number): Promise<void>;
+  deleteAll(): Promise<void>;
 }
 
 export async function consumeDailyLimit(storage: CounterStorage, limit: number, now = Date.now()): Promise<boolean> {
@@ -24,7 +26,14 @@ export class DailyLimit implements DurableObject {
     const limit = Number(new URL(request.url).searchParams.get("limit"));
     if (!Number.isSafeInteger(limit) || limit < 1) return new Response(null, { status: 400 });
     const allowed = await consumeDailyLimit(this.ctx.storage, limit);
+    // PRD section 11: the per-IP counter lives 24 hours, then the object forgets it entirely.
+    const counter = await this.ctx.storage.transaction(txn => txn.get("counter"));
+    if (counter) await this.ctx.storage.setAlarm(counter.windowStart + DAILY_WINDOW_MS);
     return new Response(null, { status: allowed ? 204 : 429 });
+  }
+
+  async alarm(): Promise<void> {
+    await this.ctx.storage.deleteAll();
   }
 }
 

@@ -3,7 +3,10 @@ import { consumeDailyLimit, DailyLimit, DAILY_WINDOW_MS, hashIp, type CounterSto
 
 class MemoryStorage implements CounterStorage {
   values = new Map<string, { count: number; windowStart: number }>();
+  alarmAt: number | null = null;
   private pending = Promise.resolve();
+  async setAlarm(scheduledTime: number) { this.alarmAt = scheduledTime; }
+  async deleteAll() { this.values.clear(); this.alarmAt = null; }
   async transaction<T>(callback: (txn: {
     get(key: string): Promise<{ count: number; windowStart: number } | undefined>;
     put(key: string, value: { count: number; windowStart: number }): Promise<void>;
@@ -39,6 +42,17 @@ describe("daily quota", () => {
     expect((await object.fetch(request())).status).toBe(204);
     expect((await object.fetch(request())).status).toBe(429);
     expect((await object.fetch(new Request("https://daily-limit/consume?limit=bad"))).status).toBe(400);
+  });
+  it("forgets the per-IP counter 24 hours after its window starts", async () => {
+    const storage = new MemoryStorage();
+    const object = new DailyLimit({ storage });
+    const before = Date.now();
+    await object.fetch(new Request("https://daily-limit/consume?limit=2", { method: "POST" }));
+    const { windowStart } = [...storage.values.values()][0]!;
+    expect(windowStart).toBeGreaterThanOrEqual(before);
+    expect(storage.alarmAt).toBe(windowStart + DAILY_WINDOW_MS);
+    await object.alarm();
+    expect(storage.values.size).toBe(0);
   });
   it("hashes the IP into a stable SHA-256 key", async () => {
     const key = await hashIp("127.0.0.1");
