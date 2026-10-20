@@ -364,24 +364,31 @@ export default function Calculator({
                   {seqNotice && <p class="small-note">{t.sequentialNotice}</p>}
                   {state.analysis.sequential.enabled && (
                     <div class="fields">
-                      <NumberField
-                        id="planned-looks"
-                        label={t.plannedLooks}
-                        value={state.analysis.sequential.plannedLooks}
-                        onInput={(plannedLooks) =>
-                          dispatch({
-                            type: "analysis",
-                            patch: {
-                              sequential: {
-                                ...state.analysis.sequential,
-                                plannedLooks,
+                      {state.plan && state.plan.looks > 1 ? (
+                        <Stat
+                          label={t.looks}
+                          value={fmt.int(state.plan.looks)}
+                        />
+                      ) : (
+                        <NumberField
+                          id="planned-looks"
+                          label={t.plannedLooks}
+                          value={state.analysis.sequential.plannedLooks}
+                          onInput={(plannedLooks) =>
+                            dispatch({
+                              type: "analysis",
+                              patch: {
+                                sequential: {
+                                  ...state.analysis.sequential,
+                                  plannedLooks,
+                                },
                               },
-                            },
-                          })
-                        }
-                        error={analysis.errors.plannedLooks}
-                        t={t}
-                      />
+                            })
+                          }
+                          error={analysis.errors.plannedLooks}
+                          t={t}
+                        />
+                      )}
                       <NumberField
                         id="current-look"
                         label={t.currentLook}

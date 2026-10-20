@@ -145,7 +145,9 @@ export function parseAnalysis(
   const intendedSplit = split.filter((x) => x !== null);
   const enabled = fields.sequential.enabled;
   const plannedLooks = enabled
-    ? number("plannedLooks", fields.sequential.plannedLooks, 2, true, 12)
+    ? plan && plan.looks > 1
+      ? plan.looks
+      : number("plannedLooks", fields.sequential.plannedLooks, 2, true, 12)
     : 2;
   const currentLook = enabled
     ? number("currentLook", fields.sequential.currentLook, 1, true)

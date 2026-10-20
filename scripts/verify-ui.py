@@ -57,7 +57,9 @@ def journey(name, fn):
     try:
         fn()
         results[name] = {'status': 'PASS'}
-        print(f'PASS {name}', flush=True)
+        if name == 'tldr' and not args.live_tldr:
+            results[name] = {'status': 'NOT RUN', 'reason': 'Fallback passed. Live generation and stale state were not exercised in this run.'}
+        print(f"{results[name]['status']} {name}", flush=True)
     except Exception as error:
         results[name] = {'status': 'FAIL', 'reason': str(error)}
         print(f'FAIL {name}: {error}', flush=True)
@@ -217,8 +219,10 @@ def tldr():
     check('Possível Sample Ratio Mismatch' in fallback and 'Crítico' in fallback, fallback)
     snap('tldr', 'fallback', 'TL;DR')
     shot('tldr', 'fallback')
+    results['tldr-fallback'] = {'status': 'PASS'}
     if not args.live_tldr:
-        results['tldr-live'] = {'status': 'NOT RUN', 'reason': 'Preliminary run. Real AI call reserved for final verification.'}
+        results['tldr-stale'] = {'status': 'NOT RUN', 'reason': 'Needs a generated summary.'}
+        results['tldr-live'] = {'status': 'NOT RUN', 'reason': 'No live call requested in this run. Respect the task-wide real generation budget.'}
         return
     click('button', 'Gerar TL;DR', '--wait-text', 'Gerado por IA em', '--timeout', '30000', '--record', str(ev / 'tldr' / 'requests.json'))
     generated = text('TL;DR')

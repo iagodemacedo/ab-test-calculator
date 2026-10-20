@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """Additional browser checks for calculator boundaries and static routes."""
+import argparse
+import re
 import json
 import os
 import subprocess
 from pathlib import Path
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--only')
+args = parser.parse_args()
 
 ctl = '.claude/skills/verify-ab-test-calculator/scripts/ctl'
 run = os.environ['ABCALC_RUN_ID']
@@ -173,10 +179,34 @@ def plan_update():
     snapshot('plan-settings-updated')
     browser('screenshot', '--path', str(ev / 'plan-updated.png'), '--full', '--viewport', '1440x1000')
 
+def long_weekly_plan():
+    click('button', 'Limpar')
+    click('link', 'Pré-teste')
+    fill('Tráfego semanal', 10000)
+    fill('Conversões semanais', 300)
+    click('radio', 'Quero detectar X%: do que preciso?')
+    fill('Lift alvo', 5)
+    click('radio', 'Semanal')
+    table = browser('text', '--role', 'table', '--name', 'Fronteiras', '--exact', '--timeout', '30000')['text']
+    looks = [line.split('\t')[0] for line in table.splitlines() if re.match(r'^\d+\t', line)][-1]
+    check(int(looks) > 12, table)
+    snapshot('long-weekly-pretest')
+    click('button', 'Usar esse plano', '--wait-url', '/pt/analise', '--timeout', '30000')
+    fill('Dias de teste', 14)
+    fill('Usuários (Controle)', 80000)
+    fill('Conversões (Controle)', 1600)
+    fill('Usuários (Variante B)', 80000)
+    fill('Conversões (Variante B)', 1696)
+    result = text()
+    check(f'1/{looks}' in result, result)
+    snapshot('long-weekly-analysis')
+
 try:
     call('doctor')
     browser('start', '--lang', 'pt-BR')
-    for name, fn in [('entries', entries), ('invalid', invalid), ('slots', slots), ('explanations', explanations), ('sequential', sequential), ('revenue', revenue), ('plan-update', plan_update)]: scenario(name, fn)
+    browser('goto', '/pt/analise')
+    for name, fn in [('entries', entries), ('invalid', invalid), ('slots', slots), ('explanations', explanations), ('sequential', sequential), ('revenue', revenue), ('plan-update', plan_update), ('long-weekly-plan', long_weekly_plan)]:
+        if not args.only or args.only == name: scenario(name, fn)
 finally:
     (ev / 'results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2))
     log.close()

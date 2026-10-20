@@ -90,3 +90,39 @@ describe("calculator actions", () => {
     expect(state.pretest.selectedWeek).toBe(2);
   });
 });
+
+it("inherits a weekly plan with more than twelve looks while limiting manual entry", () => {
+  const state = reducer(initialState("pt"), {
+    type: "example",
+    tab: "analysis",
+  });
+  const parsed = parseAnalysis(state.analysis, state.currency, null, "pt");
+  if (parsed.kind !== "ok") throw new Error("Example must parse");
+  const planned = reducer(state, {
+    type: "use-plan",
+    plan: {
+      createdAt: new Date().toISOString(),
+      groups: 2,
+      trafficShare: parsed.input.trafficShare,
+      referenceLift: parsed.input.referenceLift,
+      samplePerVariant: 200000,
+      days: 280,
+      looks: 40,
+    },
+  });
+  const inherited = parseAnalysis(
+    planned.analysis,
+    planned.currency,
+    planned.plan,
+    "pt",
+  );
+  expect(
+    inherited.kind === "ok" &&
+      inherited.input.sequential.enabled &&
+      inherited.input.sequential.plannedLooks,
+  ).toBe(40);
+  expect(
+    parseAnalysis(planned.analysis, planned.currency, null, "pt").errors
+      .plannedLooks,
+  ).toBe("looksError");
+});
