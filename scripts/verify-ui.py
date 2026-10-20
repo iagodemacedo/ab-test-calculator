@@ -121,6 +121,9 @@ def pretest():
     table = browser('text', '--role', 'table', '--name', 'MDE por semana', '--exact')['text']
     check(all(x in table for x in ['34,40%', '23,79%', '19,23%', '16,55%', '5.000', '10.000', '15.000', '20.000']), table)
     check('só detecta efeitos grandes' in text(), text())
+    chart = browser('text', '--css', 'figure.chart-frame')['text']
+    check(all(tick in chart for tick in ['0%', '10%', '20%', '30%', '40%']), chart)
+    values('pretest', 'nice-axis', chart)
     values('pretest', 'mode-a', table)
     snap('pretest', 'mode-a')
     shot('pretest', 'mode-a')
@@ -295,6 +298,7 @@ def tldr():
         results['tldr-stale'] = {'status': 'NOT RUN', 'reason': 'Needs a generated summary.'}
         results['tldr-live'] = {'status': 'NOT RUN', 'reason': 'No live call requested in this run. Respect the task-wide real generation budget.'}
         return
+    check(not any(result['status'] == 'FAIL' for result in results.values()), 'Fix earlier journey failures before spending the one real generation')
     click('button', 'Gerar TL;DR', '--wait-text', 'Gerado por IA em', '--timeout', '30000', '--record', str(ev / 'tldr' / 'requests.json'))
     generated = text('TL;DR')
     check('Possível Sample Ratio Mismatch' in generated and 'Crítico' in generated, generated)
@@ -305,7 +309,7 @@ def tldr():
     snap('tldr', 'generated', 'TL;DR')
     aria = (ev / 'tldr' / 'generated.aria.txt').read_text()
     ai_findings = [line for line in aria.splitlines() if 'heading' in line and 'apontado pela IA' in line]
-    check(all('Crítico' not in line and ('Atenção' in line or 'Info' in line) for line in ai_findings), ai_findings)
+    check(all(re.search(r'heading "(?:Atenção|Info) ', line) for line in ai_findings), ai_findings)
     values('tldr', 'severity', json.dumps(ai_findings, ensure_ascii=False))
     results['tldr-severity'] = {'status': 'PASS', 'ai_findings': len(ai_findings)}
     shot('tldr', 'generated')
@@ -317,6 +321,8 @@ def tldr():
     results['tldr-stale'] = {'status': 'PASS'}
     fill('Conversões (Variante B)', 1000)
     click('button', 'Adicionar variante', '--wait-text', 'Dados mudaram')
+    browser('wait', '--css', '#results[aria-busy="false"]')
+    check('Dados mudaram' in text('TL;DR'), 'Incomplete group must stale the summary after computation')
     snap('tldr', 'stale-incomplete-group', 'TL;DR')
     payloads = json.loads((ev / 'tldr' / 'requests.json').read_text())
     check(all('#s=' not in request['url'] for request in payloads), 'Fragment in TLDR request URL')

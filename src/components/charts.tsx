@@ -271,7 +271,9 @@ export function MdeChart({
       ]}
       xLabel={t.week}
       formatX={fmt.int}
-      formatY={(n) => fmt.pct(n, Number.isInteger(n * 100) ? 0 : 1)}
+      formatY={(n) =>
+        fmt.pct(n, Math.abs(n * 100 - Math.round(n * 100)) < 1e-8 ? 0 : 1)
+      }
       warningLine={0.1}
       selectedX={fields.selectedWeek ?? fields.horizonWeeks}
       t={t}

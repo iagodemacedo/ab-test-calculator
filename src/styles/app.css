@@ -488,6 +488,8 @@
   .stat.hero .stat-decimal {
     display: inline-block;
     width: 0.28em;
+    margin-left: -0.2em;
+    margin-right: 0.08em;
     text-align: center;
     letter-spacing: 0;
   }

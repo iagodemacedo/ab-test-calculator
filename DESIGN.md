@@ -114,7 +114,7 @@ Usadas só em alertas, achados e veredito. **Sempre com ícone + rótulo**, nunc
 | Rótulo técnico | `text-[11px] font-medium uppercase tracking-[0.08em] text-muted` | Cabeçalho de coluna de tabela, eixo de gráfico. **Não usar como eyebrow decorativo** |
 | Número de tabela | `font-mono text-[13px] tabular-nums` | Tabelas de MDE, fronteiras, fórmulas |
 
-- No número herói, o separador decimal ocupa 0,28em com tracking zero. Os dígitos mantêm o tracking −0,04em. Evita espaços aparentes ao redor da vírgula na Geist Mono.
+- No número herói, o separador decimal ocupa 0,28em com tracking zero e margens de −0,2em à esquerda e 0,08em à direita. Os dígitos mantêm o tracking −0,04em. Evita espaços aparentes ao redor da vírgula na Geist Mono.
 - `tabular-nums` em **todo** número que muda com o input (evita "dança" de largura a cada tecla).
 - Risco em p.p. mantém duas casas por padrão e pelo menos dois dígitos significativos abaixo de 0,1 p.p. Um risco não nulo nunca aparece arredondado para zero.
 - Alinhamento de números em tabela: à direita. Texto: à esquerda.

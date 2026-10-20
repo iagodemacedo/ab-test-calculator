@@ -158,6 +158,13 @@ const commands = {
       out({ ok: true, url: page.url() });
     });
   },
+  async wait() {
+    await withPage(async (page) => {
+      await locator(page).first().waitFor({ state: "visible" });
+      await afterAction(page);
+      out({ ok: true });
+    });
+  },
   async hover() {
     await withPage(async (page) => {
       await locator(page).first().hover();
@@ -230,7 +237,10 @@ const commands = {
     await withPage(async (page) => {
       ensureDir(path);
       const target = flags.role || flags.label || flags.text || flags.testid || flags.css ? locator(page).first() : null;
-      if (target) await target.screenshot({ path });
+      if (target) {
+        await target.evaluate((element) => element.scrollIntoView({ block: "center" }));
+        await target.screenshot({ path });
+      }
       else await page.screenshot({ path, fullPage: flags.full === true || flags.full === "true" });
       out({ ok: true, path, url: page.url() });
     });

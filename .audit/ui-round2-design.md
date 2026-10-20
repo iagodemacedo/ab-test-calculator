@@ -14,3 +14,5 @@ Throughput checkpoint.
 - Independent workstreams. Parsing, charts and CSS are separable, but this delegate owns the writes directly as requested.
 - Shared mutable state. AppState and protected engine/wire modules remain unchanged. Worker responses keep their request IDs.
 - Smallest safe decomposition. One owner implements and reviews each unit, then runs browser verification and commits. No subagents per brief.
+
+Incomplete raw groups extend the computed input hash with a browser-local SHA-256 fingerprint. The engine still seeds simulation from complete numeric inputs. No raw invalid group enters the TLDR wire payload. The suffix makes adding or editing an excluded group mark a saved summary stale.
