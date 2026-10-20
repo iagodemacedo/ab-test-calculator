@@ -86,6 +86,26 @@ function rateDistributions(groups: readonly GroupData[], bayes: BayesComparison,
   };
 }
 
+interface Histogram {
+  counts: number[];
+  above: number; // draws > 0
+}
+
+// Its own function so the loop over the draws never shares a frame with the payload's object
+// literals: V8 13.6 (Node 24) gave those literals one shared double box when its OSR code for
+// such a frame deoptimized (nodejs/node#66457).
+function histogram(draws: Float64Array, width: number, first: number, bins: number): Histogram {
+  const counts = new Array<number>(bins).fill(0);
+  let above = 0;
+  for (let i = 0; i < draws.length; i++) {
+    const d = draws[i]!;
+    if (d > 0) above++;
+    const bin = Math.floor(d / width) - first;
+    if (bin >= 0 && bin < bins) counts[bin]!++;
+  }
+  return { counts, above };
+}
+
 function liftDistributions(groups: readonly GroupData[], bayes: BayesComparison): LiftDistributions {
   const control = groups[0]!;
   const pc = rate(control);
@@ -113,14 +133,7 @@ function liftDistributions(groups: readonly GroupData[], bayes: BayesComparison)
     edges: edges.map((e) => round(e, AXIS_DIGITS)),
     variants: groups.slice(1).map((g, v) => {
       const draws = bayes.relativeLifts[v]!;
-      const counts = new Array<number>(bins).fill(0);
-      let above = 0;
-      for (let i = 0; i < draws.length; i++) {
-        const d = draws[i]!;
-        if (d > 0) above++;
-        const bin = Math.floor(d / width) - first;
-        if (bin >= 0 && bin < bins) counts[bin]!++;
-      }
+      const { counts, above } = histogram(draws, width, first, bins);
       const n = normals[v];
       return {
         id: g.id,
