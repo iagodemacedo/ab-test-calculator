@@ -1,5 +1,5 @@
 import { GROUP_IDS } from "../stats";
-import type { GroupCount, GroupId, Locale } from "../stats";
+import type { GroupCount, GroupId, Locale, Plan } from "../stats";
 import { ui } from "../i18n/ui";
 import type { Action, AppState, GroupFields } from "./state";
 import { STATE_VERSION } from "./state";
@@ -190,4 +190,16 @@ export function groupCount(n: number): GroupCount {
     default:
       return 2;
   }
+}
+
+export function canUsePlan(plan: Plan | null | undefined): boolean {
+  return Boolean(
+    plan &&
+      Number.isFinite(plan.referenceLift) &&
+      plan.referenceLift > 0 &&
+      Number.isFinite(plan.samplePerVariant) &&
+      plan.samplePerVariant > 0 &&
+      Number.isFinite(plan.days) &&
+      plan.days >= 1,
+  );
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { initialState, reducer } from "./reducer";
+import { canUsePlan, initialState, reducer } from "./reducer";
 import { parseAnalysis, parsePretest, readNumber } from "./parse";
+import { planPretest, toPlan } from "../stats";
 import { formatters } from "./format";
 
 describe("calculator input boundary", () => {
@@ -125,4 +126,18 @@ it("inherits a weekly plan with more than twelve looks while limiting manual ent
     parseAnalysis(planned.analysis, planned.currency, null, "pt").errors
       .plannedLooks,
   ).toBe("looksError");
+});
+
+it("keeps an undetectable rate-ceiling plan out of analysis and shared state", () => {
+  const state = initialState("pt");
+  const parsed = parsePretest(
+    { ...state.pretest, weeklyTraffic: "10000", weeklyConversions: "10000" },
+    "pt",
+  );
+  if (parsed.kind !== "ok") throw new Error("Rate ceiling is a valid input");
+  const result = planPretest(parsed.input, state.settings);
+  if (result.kind !== "ok") throw new Error("Mode A must show its MDE table");
+  expect(canUsePlan(toPlan(parsed.input, result, null, new Date()))).toBe(
+    false,
+  );
 });

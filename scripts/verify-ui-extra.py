@@ -201,11 +201,26 @@ def long_weekly_plan():
     check(f'1/{looks}' in result, result)
     snapshot('long-weekly-analysis')
 
+def rate_ceiling_plan():
+    click('link', 'Pré-teste')
+    click('button', 'Limpar')
+    fill('Tráfego semanal', 10000)
+    fill('Conversões semanais', 300)
+    click('button', 'Usar esse plano', '--wait-url', '/pt/analise')
+    click('link', 'Pré-teste')
+    fill('Conversões semanais', 10000)
+    check(browser('attr', '--role', 'button', '--name', 'Usar esse plano', '--exact', '--attr', 'disabled')['value'] is not None, 'Undetectable plan is usable')
+    check('Não é possível criar um plano' in text(), text())
+    snapshot('rate-ceiling-pretest')
+    click('link', 'Análise do teste')
+    check(browser('attr', '--role', 'button', '--name', 'Atualizar plano', '--exact', '--attr', 'disabled')['value'] is not None, 'Undetectable plan can replace a valid plan')
+    snapshot('rate-ceiling-analysis')
+
 try:
     call('doctor')
     browser('start', '--lang', 'pt-BR')
     browser('goto', '/pt/analise')
-    for name, fn in [('entries', entries), ('invalid', invalid), ('slots', slots), ('explanations', explanations), ('sequential', sequential), ('revenue', revenue), ('plan-update', plan_update), ('long-weekly-plan', long_weekly_plan)]:
+    for name, fn in [('entries', entries), ('invalid', invalid), ('slots', slots), ('explanations', explanations), ('sequential', sequential), ('revenue', revenue), ('plan-update', plan_update), ('long-weekly-plan', long_weekly_plan), ('rate-ceiling-plan', rate_ceiling_plan)]:
         if not args.only or args.only == name: scenario(name, fn)
 finally:
     (ev / 'results.json').write_text(json.dumps(results, ensure_ascii=False, indent=2))

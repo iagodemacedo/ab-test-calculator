@@ -123,6 +123,8 @@ const pt = {
   roundWeeks: "Arredonde a duração para semanas cheias.",
   lowTraffic:
     "Com menos de 10% do tráfego, a duração cresce na proporção inversa.",
+  noDetectablePlan:
+    "Não é possível criar um plano de lift positivo com estes dados.",
   noWeeklyConversions:
     "Sem conversões não dá para estimar o efeito detectável.",
   liftTooHigh: "O lift alvo levaria a taxa de conversão acima de 100%.",
@@ -322,6 +324,7 @@ const en: Catalog = {
   roundWeeks: "Round duration up to full weeks.",
   lowTraffic:
     "With less than 10% of traffic, duration grows in inverse proportion.",
+  noDetectablePlan: "A positive-lift plan cannot be created from these data.",
   noWeeklyConversions:
     "Without conversions, the detectable effect cannot be estimated.",
   liftTooHigh: "The target lift would take the conversion rate above 100%.",

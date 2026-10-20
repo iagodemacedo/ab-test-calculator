@@ -9,7 +9,7 @@ import { content as ptContent } from "../i18n/content/pt";
 import { content as enContent } from "../i18n/content/en";
 import { formatters } from "../app/format";
 import { encode, saveDraft } from "../app/codec";
-import { groupCount } from "../app/reducer";
+import { canUsePlan, groupCount } from "../app/reducer";
 import { useCalculatorState, useEngine } from "../app/hooks";
 import { track } from "../app/analytics";
 import { Button, NumberField, Segmented, Stat, Toggle } from "./controls";
@@ -246,7 +246,7 @@ export default function Calculator({
           state.plan.looks !== response.plan.looks),
     );
   const usePlan = () => {
-    if (!response?.plan || busy) return;
+    if (!response?.plan || busy || !canUsePlan(response.plan)) return;
     const action: Action = {
       type: "use-plan",
       plan: { ...response.plan, createdAt: new Date().toISOString() },
@@ -307,7 +307,10 @@ export default function Calculator({
             {planChanged && (
               <>
                 <p class="small-note">{t.planChanged}</p>
-                <Button onClick={usePlan} disabled={!response?.plan || busy}>
+                <Button
+                  onClick={usePlan}
+                  disabled={!canUsePlan(response?.plan) || busy}
+                >
                   {t.updatePlan}
                 </Button>
               </>
@@ -560,10 +563,9 @@ export default function Calculator({
                   <Button
                     variant="primary"
                     disabled={
-                      !response?.plan ||
+                      !canUsePlan(response?.plan) ||
                       pretest.kind !== "ok" ||
-                      busy ||
-                      !Number.isFinite(response.plan.referenceLift)
+                      busy
                     }
                     onClick={usePlan}
                   >

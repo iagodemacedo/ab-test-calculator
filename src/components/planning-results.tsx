@@ -1,3 +1,4 @@
+import { canUsePlan } from "../app/reducer";
 import IconWarning from "~icons/ph/warning";
 import type { PretestFields } from "../app/state";
 import type { Plan, PretestResult } from "../stats/types";
@@ -110,6 +111,11 @@ export function PlanningResults({
     );
   return (
     <>
+      {plan && !canUsePlan(plan) && (
+        <p class="warning">
+          {t.warning}. {t.noDetectablePlan}
+        </p>
+      )}
       <div class="stats">
         <Stat label={t.baseline} value={fmt.pct(result.baselineRate)} />
         <Stat
