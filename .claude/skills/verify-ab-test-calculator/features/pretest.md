@@ -32,6 +32,6 @@ Preconditions:
 
 ## Gotchas
 
-- Mode A and Mode B must be exact inverses (PRD section 3): putting `16,55` as the target lift in Mode B must give 4 weeks of sample. Use this as a cross-check when a number looks off.
+- Mode A and Mode B are exact inverses (PRD section 3), but only with the unrounded MDE. Typing the displayed `16,55` as the target lift in Mode B gives `29 dias`, not 28, because the real week-4 MDE is 16,5550%. Expect 29 days for this cross-check.
 - Thousands separators in results are dots on `/pt` (`53.211`) and commas on `/en` (`53,211`).
 - "Usar esse plano" must not reload the page; if it does, the plan travels only if it is in the fragment. Report a full reload as a defect against ROUTES.md.
