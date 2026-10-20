@@ -665,6 +665,7 @@ export default function Calculator({
                 <>
                   <PlanningResults
                     result={planning}
+                    plan={response?.plan ?? null}
                     fields={state.pretest}
                     select={(selectedWeek) => updatePretest({ selectedWeek })}
                     fmt={fmt}

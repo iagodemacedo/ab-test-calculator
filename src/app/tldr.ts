@@ -99,6 +99,12 @@ export function parseTldrResponse(
   const returned = findings.filter(
     (f) => f.source === "ai" || rules.some((rule) => rule.ruleId === f.ruleId),
   );
+  for (const finding of returned) {
+    if (finding.source === "rule") {
+      const rule = rules.find((rule) => rule.ruleId === finding.ruleId);
+      if (rule) finding.title = rule.title;
+    }
+  }
   for (const rule of rules)
     if (!returned.some((f) => f.source === "rule" && f.ruleId === rule.ruleId))
       returned.push(rule);

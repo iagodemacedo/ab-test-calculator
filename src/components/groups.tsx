@@ -24,131 +24,129 @@ export function Groups({
   fmt: Formatter;
   t: Ui;
 }) {
+  const methodLabel =
+    state.analysis.method === "bayesian" ? t.probability : t.pvalue;
   return (
     <>
-      <table class="group-table" aria-label={t.data}>
-        <thead>
-          <tr>
-            <th scope="col">{t.group}</th>
-            <th scope="col">{t.users}</th>
-            <th scope="col">{t.conversions}</th>
-            <th scope="col">{t.split} %</th>
-            <th scope="col">
-              <span class="sr-only">{t.remove}</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {state.analysis.groups.map((g) => {
-            const stat =
-              result?.kind === "ok"
-                ? result.groups.find((s) => s.id === g.id)
-                : undefined;
-            const variant =
-              result?.kind === "ok"
-                ? result.variants.find((v) => v.id === g.id)
-                : undefined;
-            return (
-              <tr key={g.id}>
-                <td>
-                  <div class="group-name">
-                    <span
-                      class="series-marker"
-                      style={{
-                        background: `var(--series-${GROUP_IDS.indexOf(g.id) + 1})`,
-                      }}
-                      aria-hidden="true"
-                    />
-                    <input
-                      aria-label={`${t.groupName} ${g.id}`}
-                      value={g.name}
-                      maxLength={40}
-                      onInput={(e) =>
-                        dispatch({
-                          type: "group",
-                          id: g.id,
-                          patch: { name: e.currentTarget.value },
-                        })
-                      }
-                    />
-                  </div>
-                  <div class="group-output">
-                    <p>
-                      {t.cr}{" "}
-                      <span class="metric">
-                        {stat ? fmt.pct(stat.rate) : "—"}
-                      </span>
-                    </p>
-                    {variant && (
-                      <>
-                        <p>
-                          {t.lift}{" "}
-                          <span class="metric">
-                            {variant.ztest.lift === null
-                              ? "—"
-                              : fmt.pct(variant.ztest.lift)}
-                          </span>
-                        </p>
-                        <p>
-                          {state.analysis.method === "bayesian"
-                            ? t.probability
-                            : t.pvalue}{" "}
-                          <span class="metric">
-                            {state.analysis.method === "bayesian"
-                              ? fmt.pct(
-                                  variant.bayes.probabilityToBeatControl,
-                                  1,
-                                )
-                              : fmt.pvalue(variant.ztest.pValue)}
-                          </span>
-                        </p>
-                      </>
-                    )}
-                  </div>
-                </td>
-                {(["users", "conversions", "splitPct"] as const).map(
-                  (field) => (
-                    <td key={field}>
-                      <NumberField
-                        compact
-                        id={`${g.id}-${field}`}
-                        label={`${field === "users" ? t.users : field === "conversions" ? t.conversions : t.split} (${g.name})`}
-                        value={g[field]}
-                        onInput={(value) =>
+      <div class="table-scroll group-scroll">
+        <table class="group-table" aria-label={t.data}>
+          <thead>
+            <tr>
+              <th scope="col">{t.group}</th>
+              <th scope="col">{t.users}</th>
+              <th scope="col">{t.conversions}</th>
+              <th scope="col">{t.split} %</th>
+              <th scope="col">{t.cr}</th>
+              <th scope="col">{t.lift}</th>
+              <th scope="col">{methodLabel}</th>
+              <th scope="col">
+                <span class="sr-only">{t.remove}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {state.analysis.groups.map((g) => {
+              const stat =
+                result?.kind === "ok"
+                  ? result.groups.find((s) => s.id === g.id)
+                  : undefined;
+              const variant =
+                result?.kind === "ok"
+                  ? result.variants.find((v) => v.id === g.id)
+                  : undefined;
+              const metrics = [
+                { label: t.cr, value: stat ? fmt.pct(stat.rate) : "—" },
+                {
+                  label: t.lift,
+                  value:
+                    variant && variant.ztest.lift !== null
+                      ? fmt.pct(variant.ztest.lift)
+                      : "—",
+                },
+                {
+                  label: methodLabel,
+                  value: variant
+                    ? state.analysis.method === "bayesian"
+                      ? fmt.pct(variant.bayes.probabilityToBeatControl, 1)
+                      : fmt.pvalue(variant.ztest.pValue)
+                    : "—",
+                },
+              ];
+              return (
+                <tr key={g.id}>
+                  <td>
+                    <div class="group-name">
+                      <span
+                        class="series-marker"
+                        style={{
+                          background: `var(--series-${GROUP_IDS.indexOf(g.id) + 1})`,
+                        }}
+                        aria-hidden="true"
+                      />
+                      <input
+                        aria-label={`${t.groupName} ${g.id}`}
+                        value={g.name}
+                        maxLength={40}
+                        onInput={(e) =>
                           dispatch({
                             type: "group",
                             id: g.id,
-                            patch: { [field]: value },
+                            patch: { name: e.currentTarget.value },
                           })
                         }
-                        error={
-                          g[field] ? errors[`${g.id}.${field}`] : undefined
-                        }
-                        unit={field === "splitPct" ? "%" : undefined}
-                        t={t}
                       />
-                    </td>
-                  ),
-                )}
-                <td class="remove-cell">
-                  {g.id !== "A" && state.analysis.groups.length > 2 && (
-                    <button
-                      class="remove-group"
-                      type="button"
-                      aria-label={`${t.remove} ${g.name}`}
-                      onClick={() =>
-                        dispatch({ type: "remove-variant", id: g.id })
-                      }
-                    >
-                      <IconX aria-hidden="true" />
-                    </button>
+                    </div>
+                  </td>
+                  {(["users", "conversions", "splitPct"] as const).map(
+                    (field) => (
+                      <td key={field}>
+                        <NumberField
+                          compact
+                          id={`${g.id}-${field}`}
+                          label={`${field === "users" ? t.users : field === "conversions" ? t.conversions : t.split} (${g.name})`}
+                          value={g[field]}
+                          onInput={(value) =>
+                            dispatch({
+                              type: "group",
+                              id: g.id,
+                              patch: { [field]: value },
+                            })
+                          }
+                          error={
+                            g[field] ? errors[`${g.id}.${field}`] : undefined
+                          }
+                          unit={field === "splitPct" ? "%" : undefined}
+                          t={t}
+                        />
+                      </td>
+                    ),
                   )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  {metrics.map((metric) => (
+                    <td class="group-output" key={metric.label}>
+                      <span class="mobile-label">{metric.label}</span>
+                      <span class="metric">{metric.value}</span>
+                    </td>
+                  ))}
+                  <td class="remove-cell">
+                    {g.id !== "A" && state.analysis.groups.length > 2 && (
+                      <button
+                        class="remove-group"
+                        type="button"
+                        aria-label={`${t.remove} ${g.name}`}
+                        onClick={() =>
+                          dispatch({ type: "remove-variant", id: g.id })
+                        }
+                      >
+                        <IconX aria-hidden="true" />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       {errors.split && <p class="field-error">{t.splitError}</p>}
       {state.analysis.groups.length < 5 && (
         <Button

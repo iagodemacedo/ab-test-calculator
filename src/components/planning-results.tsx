@@ -1,6 +1,6 @@
 import IconWarning from "~icons/ph/warning";
 import type { PretestFields } from "../app/state";
-import type { PretestResult } from "../stats/types";
+import type { Plan, PretestResult } from "../stats/types";
 import type { Ui } from "../i18n/ui";
 import type { Formatter } from "../app/format";
 import { Stat } from "./controls";
@@ -80,12 +80,14 @@ export function MdeTable({
 }
 export function PlanningResults({
   result,
+  plan,
   fields,
   select,
   fmt,
   t,
 }: {
   result: PretestResult | null;
+  plan: Plan | null;
   fields: PretestFields;
   select: (week: number) => void;
   fmt: Formatter;
@@ -136,8 +138,8 @@ export function PlanningResults({
             />
             <Stat
               label={t.days}
-              value={`${fmt.int(result.sequential ? Math.ceil(result.targetLift.days * result.sequential.inflationFactor) : result.targetLift.days)} ${t.dayUnit}`}
-              note={`${fmt.num(result.targetLift.weeks, 1)} ${t.weeks}`}
+              value={`${fmt.int(plan?.days ?? result.targetLift.days)} ${t.dayUnit}`}
+              note={`${fmt.num((plan?.days ?? result.targetLift.days) / 7, 1)} ${t.weeks}`}
             />
           </div>
           <p class="small-note">{t.roundWeeks}</p>

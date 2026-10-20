@@ -65,3 +65,21 @@ it("caps AI severity and restores missing deterministic findings", () => {
     ),
   ).toBeNull();
 });
+
+it("keeps rule titles stable when the AI renames them", () => {
+  const rule = {
+    source: "rule" as const,
+    ruleId: "srm" as const,
+    severity: "critical" as const,
+    title: "Possível Sample Ratio Mismatch",
+    explanation: "A mismatch.",
+    action: "Investigate.",
+  };
+  const summary = parseTldrResponse(
+    { tldr: "A summary.", findings: [{ ...rule, title: "SRM" }] },
+    [rule],
+    "hash",
+    "pt",
+  );
+  expect(summary?.findings[0]?.title).toBe(rule.title);
+});
