@@ -1,0 +1,76 @@
+npm notice run npx
+npm notice run 'vitest' run
+
+ RUN  v5.0.5 /home/elliot/.t3/projects/ab-test-calculator
+
+ ❯ src/stats/distributions.test.ts (11 tests | 1 failed) 315ms
+   ❯ distribution payload (2)
+     × is deterministic for the same input 199ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/stats/distributions.test.ts > distribution payload > is deterministic for the same input
+AssertionError: expected { rate: { x: [ …(120) ], …(1) }, …(1) } to deeply equal { rate: { x: [ …(120) ], …(1) }, …(1) }
+
+- Expected
++ Received
+
+@@ -195,11 +195,11 @@
+              0.001571,
+              0.0007131,
+              0.0003126,
+              0.0001323,
+            ],
+-           "massAboveZero": 0.9973127879970872,
++           "massAboveZero": 0.9822964200432696,
+          },
+        },
+        {
+          "bayes": {
+            "density": [
+@@ -330,11 +330,11 @@
+              0.00005646,
+              0.00002216,
+              0.000008398,
+              0.000003072,
+            ],
+-           "massAboveZero": 0.9973127879970872,
++           "massAboveZero": 0.9212189874021459,
+          },
+        },
+        {
+          "bayes": {
+            "density": [
+@@ -465,11 +465,11 @@
+              3.649e-10,
+              9.505e-11,
+              2.386e-11,
+              5.774e-12,
+            ],
+-           "massAboveZero": 0.9973127879970872,
++           "massAboveZero": 0.31517350326195237,
+          },
+        },
+        {
+          "bayes": {
+            "density": [
+
+ ❯ src/stats/distributions.test.ts:113:74
+    111|
+    112|   it("is deterministic for the same input", () => {
+    113|     expect(ok(analyze(structuredClone(five), settings())).distribution…
+       |                                                                          ^
+    114|   });
+    115|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 15 passed (16)
+      Tests  1 failed | 329 passed (330)
+   Start at  16:45:35
+   Duration  2.57s (tests 82%, import 12%, transform 4%, worker 2%)
+
+    Isolate  16 workers spawned · ~145ms startup each (spawn + environment, per file)
+             at least ~629ms faster with isolate: false — reuses workers across files instead of one per file
+
