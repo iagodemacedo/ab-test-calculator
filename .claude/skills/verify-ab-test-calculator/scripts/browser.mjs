@@ -241,7 +241,10 @@ const commands = {
         await target.evaluate((element) => element.scrollIntoView({ block: "center" }));
         await target.screenshot({ path });
       }
-      else await page.screenshot({ path, fullPage: flags.full === true || flags.full === "true" });
+      else {
+        await page.evaluate(() => window.scrollTo(0, 0));
+        await page.screenshot({ path, fullPage: flags.full === true || flags.full === "true" });
+      }
       out({ ok: true, path, url: page.url() });
     });
   },
