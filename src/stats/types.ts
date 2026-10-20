@@ -22,6 +22,18 @@ export interface Settings {
 /** Slot order is identity: A is always the control, B..E the variants, and slot N owns chart color N. */
 export type GroupId = "A" | "B" | "C" | "D" | "E";
 export const GROUP_IDS: readonly GroupId[] = ["A", "B", "C", "D", "E"];
+
+/** The slots in use: A first, then 1 to 4 of B..E in increasing order. Removing C while D stays sends A, B, D. */
+export function isGroupIdSequence(ids: readonly unknown[]): ids is readonly GroupId[] {
+  if (ids.length < 2 || ids.length > GROUP_IDS.length || ids[0] !== "A") return false;
+  let previous = 0;
+  for (const id of ids.slice(1)) {
+    const slot = GROUP_IDS.findIndex((g) => g === id);
+    if (slot <= previous) return false;
+    previous = slot;
+  }
+  return true;
+}
 export type GroupCount = 2 | 3 | 4 | 5;
 
 /** Fraction in (0, 1]. Branded so a percentage (e.g. 100) can never be passed where a fraction is expected. */
@@ -123,7 +135,7 @@ export type Sequential =
 export interface AnalysisInput {
   days: number | null; // null when not informed
   trafficShare: Fraction;
-  groups: GroupData[]; // index 0 is the control; length 2..5
+  groups: GroupData[]; // index 0 is the control (A); ids satisfy isGroupIdSequence
   intendedSplit: Fraction[]; // same length as groups, sums to 1
   method: Method;
   sequential: Sequential;
@@ -176,7 +188,7 @@ export interface VariantResult {
   id: GroupId;
   ztest: ZTestResult;
   bayes: BayesResult;
-  verdict: Verdict; // for the selected method
+  verdict: Verdict; // for the governing method of the analysis
   verdictZ: Verdict;
   verdictBayes: Verdict;
   achievedMde: RelativeLift;
@@ -190,11 +202,49 @@ export interface RevenueResult {
   forecast: { id: GroupId; months: number[] }[]; // cumulative revenue per month of the horizon
 }
 
+/** A density over RateDistributions.x and the interval to shade under it. */
+export interface RateCurve {
+  density: number[];
+  interval: [number, number]; // Z test: confidence interval of the rate; Bayesian: credible interval
+}
+
+export interface RateDistributions {
+  x: number[]; // conversion rates, ascending, shared by every group and both methods
+  groups: {
+    id: GroupId;
+    ztest: RateCurve | null; // null when the standard error is 0 (a rate of 0% or 100%)
+    bayes: RateCurve; // posterior Beta(1 + conversions, 1 + users - conversions)
+  }[];
+}
+
+export interface LiftDensity {
+  density: number[]; // one value per bin of LiftDistributions.edges
+  massAboveZero: number; // Bayesian: equals probabilityToBeatControl
+}
+
+export interface LiftDistributions {
+  /** Bin edges in relative lift, ascending, shared by every variant and both methods. 0 is an edge whenever it is in range. */
+  edges: number[];
+  variants: {
+    id: GroupId;
+    ztest: LiftDensity | null; // normal density at each bin midpoint; null when the standard error is 0
+    bayes: LiftDensity; // histogram of the Monte Carlo lifts, normalized by all draws
+  }[];
+}
+
+/** What the CR and lift charts draw (PRD section 10). */
+export interface Distributions {
+  rate: RateDistributions;
+  lift: LiftDistributions | null; // null when the control rate is 0, as relative lift is undefined
+}
+
 export type AnalysisResult =
   | { kind: "empty" }
   | { kind: "no-conversions" }
   | {
       kind: "ok";
+      /** The method behind each verdict: the selected one, or the Z test whenever the test is sequential. */
+      governingMethod: Method;
       alpha: number;
       groups: GroupStats[];
       variants: VariantResult[]; // one per non-control group
@@ -202,6 +252,7 @@ export type AnalysisResult =
       extraDays: number | null; // null without days
       revenue: RevenueResult | null;
       findings: Finding[];
+      distributions: Distributions;
       inputHash: string; // stable hash of the inputs, seeds the Monte Carlo and the TL;DR stale check
     };
 

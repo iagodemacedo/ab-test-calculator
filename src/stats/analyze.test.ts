@@ -187,6 +187,23 @@ describe("analysis edge cases (PRD sections 5 to 7)", () => {
     near(1 - variantsBest, control, mcTolerance(control), "control P(best)");
   });
 
+  it("non-contiguous slots A, B, D give the numbers of A, B, C under D's letter", () => {
+    const contiguous = analysisInput([[80000, 1600], [80000, 1696], [80000, 1500]], {
+      revenue: { valuePerConversion: 50, currency: "BRL", horizonMonths: 3 },
+    });
+    const gapped = { ...contiguous, groups: contiguous.groups.map((g) => (g.id === "C" ? { ...g, id: "D" as const } : g)) };
+    const a = ok(analyze(contiguous, settings()));
+    const b = ok(analyze(gapped, settings()));
+    const relabel = (value: unknown) => JSON.parse(JSON.stringify(value).replaceAll('"C"', '"D"'));
+    expect(b.variants.map((v) => v.id)).toEqual(["B", "D"]);
+    expect(b.variants).toEqual(relabel(a.variants));
+    expect(b.findings).toEqual(relabel(a.findings));
+    expect(b.findings.some((f) => "variant" in f && f.variant === "D")).toBe(true);
+    expect(b.distributions).toEqual(relabel(a.distributions));
+    expect(b.revenue).toEqual(relabel(a.revenue));
+    expect(b.inputHash).not.toBe(a.inputHash);
+  });
+
   it("extra days are null without the test duration", () => {
     expect(ok(analyze(analysisInput([[80000, 1600], [80000, 1696]], { days: null }), settings())).extraDays).toBeNull();
   });

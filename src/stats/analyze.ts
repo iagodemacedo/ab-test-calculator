@@ -1,12 +1,13 @@
 // Analysis of a finished or running test (PRD sections 5 to 9).
 import { compareBayes } from "./bayes";
+import { distributions } from "./distributions";
 import { evaluateFindings } from "./findings";
 import { inputHash, posteriorSeed } from "./hash";
 import { projectRevenue } from "./revenue";
 import { minimumDetectableEffect, sampleSize, testDesign } from "./sample-size";
 import { boundaryAtLook } from "./sequential";
 import { srm } from "./srm";
-import type { AnalysisInput, AnalysisResult, GroupStats, RelativeLift, SequentialStatus, Settings, VariantResult } from "./types";
+import type { AnalysisInput, AnalysisResult, GroupStats, Method, RelativeLift, SequentialStatus, Settings, VariantResult } from "./types";
 import { verdictBayes, verdictZ } from "./verdict";
 import { rate, standardError, zTest } from "./ztest";
 
@@ -31,7 +32,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
   const bayes = compareBayes(input.groups, posteriorSeed(input.groups), settings.confidence);
   const requiredSamplePerVariant = Math.ceil(sampleSize(controlRate, input.referenceLift, design));
   // The sequential toggle only exists for the Z test (PRD section 4), so it governs the verdict.
-  const zTestGoverns = input.method === "ztest" || input.sequential.enabled;
+  const governingMethod: Method = input.method === "ztest" || input.sequential.enabled ? "ztest" : "bayesian";
 
   const variants: VariantResult[] = input.groups.slice(1).map((g, i) => {
     const sample = Math.min(control.users, g.users);
@@ -39,14 +40,14 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
     const fixed = zTest(control, g, design.alpha, settings.hypothesis);
     const sequential = sequentialStatus(input, sample, fixed.z, design.alpha, settings);
     const ztest = sequential ? { ...fixed, significant: sequential.crossed } : fixed;
-    const b = bayes[i]!;
+    const b = bayes.variants[i]!;
     const vz = verdictZ(ztest.significant, ztest.absoluteDiff, settings.hypothesis, achievedMde, input.referenceLift);
     const vb = verdictBayes(b.probabilityToBeatControl, settings.confidence, achievedMde, input.referenceLift);
     return {
       id: g.id,
       ztest,
       bayes: b,
-      verdict: zTestGoverns ? vz : vb,
+      verdict: governingMethod === "ztest" ? vz : vb,
       verdictZ: vz,
       verdictBayes: vb,
       achievedMde,
@@ -65,6 +66,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
 
   return {
     kind: "ok",
+    governingMethod,
     alpha: design.alpha,
     groups,
     variants,
@@ -72,6 +74,7 @@ export function analyze(input: AnalysisInput, settings: Settings): AnalysisResul
     extraDays,
     revenue: projectRevenue(input, groups),
     findings: evaluateFindings({ input, settings, srmPValue: srmResult.pValue, srmMismatch: srmResult.mismatch, variants }),
+    distributions: distributions(input.groups, bayes, settings.confidence),
     inputHash: inputHash(input, settings),
   };
 }
