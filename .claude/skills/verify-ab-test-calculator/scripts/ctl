@@ -77,7 +77,7 @@ cmd_launch() {
       "$pm" run build >>"$STATE/app.log" 2>&1) || { tail -40 "$STATE/app.log" >&2; die "build failed"; }
     # Serve the built site and the /api/tldr Worker together, like production.
     # Local state (rate-limit counter) goes to this run's own directory.
-    # Warn level suppresses Wrangler's variable dump, which would print the API key.
+    # npm notices and Wrangler's variable dump would print the API key.
     (
       cd "$REPO"
       if [[ -n "${ABCALC_LAUNCH_CMD:-}" ]]; then
@@ -87,7 +87,7 @@ cmd_launch() {
       if [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
         openrouter_args+=(--var "OPENROUTER_API_KEY:$OPENROUTER_API_KEY")
       fi
-      exec setsid npx wrangler dev --ip 127.0.0.1 --port "$APP_PORT" --persist-to "$STATE/wrangler" \
+      exec setsid npx --loglevel error wrangler dev --ip 127.0.0.1 --port "$APP_PORT" --persist-to "$STATE/wrangler" \
         --log-level warn --var "TURNSTILE_SECRET_KEY:$TURNSTILE_TEST_SECRET_KEY" "${openrouter_args[@]}"
     ) >>"$STATE/app.log" 2>&1 &
   fi
