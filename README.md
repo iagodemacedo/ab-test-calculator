@@ -199,4 +199,4 @@ Quando o código e o DESIGN.md divergem, o código vence e o documento é atuali
 
 ## Licença
 
-O repositório ainda não define uma licença.
+[PolyForm Noncommercial 1.0.0](LICENSE.md). Você pode usar, copiar, modificar e redistribuir o código para qualquer fim não comercial: uso pessoal, estudo, pesquisa, ONGs, escolas e órgãos públicos. Uso comercial não é permitido. Para isso, fale com o autor.
