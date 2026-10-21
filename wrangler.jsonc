@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ab-test-calculator",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "routes": [{ "pattern": "ab-test.iago.wtf", "custom_domain": true }],
+  "workers_dev": false,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/", "/api/*"]
+  },
+  "ai": { "binding": "AI" },
+  "vars": {
+    "AI_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "DAILY_TLDR_LIMIT": "20"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "DAILY_LIMIT", "class_name": "DailyLimit" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DailyLimit"] }],
+  "ratelimits": [
+    { "name": "BURST_LIMIT", "namespace_id": "1001", "simple": { "limit": 5, "period": 60 } }
+  ],
+  "observability": { "enabled": true, "head_sampling_rate": 1 }
+}

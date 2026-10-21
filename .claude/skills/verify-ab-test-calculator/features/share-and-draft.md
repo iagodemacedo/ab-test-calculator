@@ -7,7 +7,7 @@ The user copies a link that reproduces exactly what is on screen, including any 
 - `share-copy` copies the link and shows "Link copiado".
 - `share-open` restores every input, method and setting from the link in a clean browser state.
 - `share-precedence` gives the link priority over an existing draft and shows the replacement notice.
-- `draft-persist` keeps the last state across a reload without a fragment.
+- `draft-persist` keeps the last state and active tab across a reload without a fragment.
 - `draft-clear` empties the page and removes the draft with "Limpar".
 - `share-private` never sends the fragment in any request.
 - `share-invalid` shows "Não foi possível ler este link" for a corrupted fragment.
@@ -33,6 +33,7 @@ Preconditions:
 - **Link beats draft.** Run `ctl browser fill --role spinbutton --name "Dias de teste" --value 1` (creates a draft), then `ctl browser goto about:blank` and `ctl browser goto "<link>"`. The notice `seu rascunho anterior foi substituído pelo link` appears and the link's values win.
 - **Invalid link.** Run `ctl browser goto about:blank` and then `ctl browser goto "/pt/analise#s=corrompido"`. The notice `Não foi possível ler este link` appears and the page is empty.
 - **Fragment never leaves the browser.** With the link open, run `ctl browser network --path "$EV/share/network.json"`. No request URL or body in the file contains `#s=` or the fixture numbers `1696`.
+- **Restore the active tab.** After `Limpar`, choose `Pré-teste`, fill `Tráfego semanal` with `10000` and `Conversões semanais` with `300`, and wait for the 500 ms draft save. Run `ctl browser goto /pt/analise --wait-url /pt/pre-teste`. The pre-test tab and its inputs return. With the English browser profile, `ctl browser goto / --wait-url /en/pre-test` restores the same draft in English. Save snapshots to `$EV/share/draft-tab-restored.aria.txt` and `$EV/share/draft-tab-root-en.aria.txt`.
 - **Proof.** Run `ctl browser snapshot --path "$EV/share/restored.aria.txt"` after opening the link and `ctl browser screenshot --path "$EV/share/restored.png" --full`.
 
 ## Gotchas

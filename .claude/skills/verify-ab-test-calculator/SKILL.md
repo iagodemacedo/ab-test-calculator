@@ -7,7 +7,7 @@ description: Launch AB Test Calculator (Astro static site + /api/tldr Cloudflare
 
 Drives the real app: the built static pages and the `/api/tldr` Worker served together by the local Cloudflare dev server, opened in headless Chromium, and operated by accessible role and name. All commands go through `scripts/ctl` (run from the repo root as `.claude/skills/verify-ab-test-calculator/scripts/ctl`, written `ctl` below).
 
-> **Status (2026-10-20): harness proven, app path is a draft.** The repo had no app code when this skill was written. `ctl selftest` proved launch, doctor, browser drive, evidence and cleanup against a stand-in page. Everything marked **UNVERIFIED** below depends on the app scaffold and must be confirmed (and this file corrected) on the first run against real code. Use `/maintain-verification-skill` for that.
+> **Status (2026-10-20): round 2 verified.** Run `r20261020-170428-1178412` passed every feature journey, including one real TL;DR, canonical rule titles, severity checks and both stale paths. Lighthouse scored 100 in performance, accessibility and best practices for both Portuguese calculator routes on desktop and mobile. See `.audit/ui-round2-report.md` for evidence and limits.
 
 Product truth lives in `PRD.md`, `ROUTES.md` and `DESIGN.md` at the repo root. The feature map in `features/` turns them into journeys.
 
@@ -22,7 +22,7 @@ What it does (mode `app`):
 1. Picks two free ports on 127.0.0.1 (app and Chrome DevTools), so runs never collide.
 2. Installs deps with the repo's package manager (`pnpm` if `pnpm-lock.yaml` exists, else `npm`). **pnpm is not installed on this machine**: run `corepack enable` once if the repo adopts pnpm.
 3. Builds with `PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA` (Cloudflare test key, always passes) and `PUBLIC_UMAMI_WEBSITE_ID` empty (no analytics from verification runs) unless `ABCALC_UMAMI_WEBSITE_ID` is set.
-4. Starts `npx wrangler dev --ip 127.0.0.1 --port <app> --persist-to <run>/wrangler --var TURNSTILE_SECRET_KEY:1x0000000000000000000000000000000AA` in its own process group. Override the whole command with `ABCALC_LAUNCH_CMD` if the scaffold needs something else. **UNVERIFIED**: confirm the wrangler config serves the Astro build and the Worker together; `cf dev` was not used because it runs the framework dev server and does not forward `--port`.
+4. Starts `npx wrangler dev --ip 127.0.0.1 --port <app> --persist-to <run>/wrangler --var TURNSTILE_SECRET_KEY:1x0000000000000000000000000000000AA` in its own process group. Override the whole command with `ABCALC_LAUNCH_CMD` if the scaffold needs something else. Verified against `wrangler.jsonc`: static Astro pages and the Worker share this server. `cf dev` was not used because it runs the framework dev server and does not forward `--port`.
 5. Ready = `GET /pt/analise` (redirects followed) returns HTML containing `AB Test Calculator`, within 180 s (`ABCALC_READY_TIMEOUT`). In the browser, `ctl browser goto` additionally waits for `main[data-ready="true"]`, the hydration marker the calculator island must set (contract, see Gotchas). On failure, launch prints the log tail and cleans up its own processes.
 
 There is no seed data and no database: every journey starts from an empty page, and state lives in the URL fragment and `localStorage` of this run's private Chrome profile.
@@ -43,7 +43,7 @@ Run first, and again whenever anything looks off. Read-only.
 | port owned by run | the app port is held by this run's process group, not someone else's server |
 | page /pt/analise, /en/analysis | both locales answer 200 |
 | build revision | HEAD still equals the commit built at launch (relaunch if not) |
-| api /api/tldr route | `GET /api/tldr` answers 405, proving the Worker route exists without calling the AI. **UNVERIFIED** contract |
+| api /api/tldr route | `GET /api/tldr` answers 405, proving the Worker route exists without calling the AI. Verified contract |
 | cloudflare auth | `cf auth whoami` reports a valid token (the Workers AI binding always runs remotely, even in local dev) |
 | browser (CDP) | the run's Chromium answers on its DevTools port |
 
@@ -67,17 +67,19 @@ ctl browser screenshot --path "$EV/analysis/results.png" [--full]
 |---|---|
 | `start [--lang pt-BR]` | launch headless Chromium for this run (Playwright headless shell; the full Chromium build lacks system libraries here). `--lang` sets the UI language and `Accept-Language` for the whole run |
 | `goto <path>` | navigate; `--wait-ready false` skips the hydration wait (404 page, redirects) |
-| `click`, `fill`, `press <Key>` | user actions |
+| `click`, `fill`, `press <Key>`, `hover` | user actions |
 | `text`, `value`, `attr --attr <name>`, `url` | read what the user sees |
 | `clipboard` | read the clipboard after "Salvar e compartilhar link" |
 | `storage` | read-only list of `localStorage` keys and sizes (proves the local draft exists or was cleared) |
 | `snapshot --path f.aria.txt` | ARIA snapshot of the page or of a target |
-| `screenshot --path f.png` | screenshot |
+| `screenshot --path f.png [--viewport 390x844]` | screenshot at the specified viewport; a target captures only that element |
+| `wait --css <selector>` | wait for a visible matching element |
+| `layout --css <selector>` | read-only dimensions, scroll width, text, opacity and chart marks |
 | `network --path f.json` | reload and record every request with its body (proves what leaves the browser) |
 
-Targets: `--role <role> --name <accessible name>` (preferred), `--label <label>`, `--text <text>`, `--testid <id>`, `--css <selector>` (last resort, e.g. `--css html` to read `data-theme`); add `--exact` for exact name match. After any action: `--wait-text`, `--wait-gone`, `--wait-url`. `--block <path>` aborts matching requests during that one command (used to force the TL;DR fallback; a failed network request is a real production condition). `--record <file.json>` saves every request (method, URL, body) made during that one command, which is how the TL;DR payload is proven. `--color-scheme light|dark` emulates the OS theme for that command. `--timeout <ms>` defaults to 10000.
+Targets: `--role <role> --name <accessible name>` (preferred), `--label <label>`, `--text <text>`, `--testid <id>`, `--css <selector>` (last resort, e.g. `--css html` to read `data-theme`); add `--exact` for exact name match. After any action: `--wait-text`, `--wait-gone`, `--wait-url`. `--block <path>` aborts matching requests during that one command (used to force the TL;DR fallback; a failed network request is a real production condition). `--record <file.json>` saves every request (method, URL, body) made during that one command, which is how the TL;DR payload is proven. `--color-scheme light|dark` emulates the OS theme for that command. `--timeout <ms>` defaults to 10000. `--wait-text` waits for a visible match, so text inside a closed explanation does not block it. `--viewport WIDTHxHEIGHT` sets the viewport for a command.
 
-Accessible names in `features/` come from the PRD wording in Portuguese. **UNVERIFIED** until the UI exists: if the implementation names a control differently, fix the feature file (or the UI, if the PRD wording should win), never loosen the journey.
+Accessible names in `features/` follow the Portuguese UI and content packs. If a name changes, update the corresponding UI or feature file in the same change while keeping the numeric assertions and user behavior intact.
 
 ## Evidence
 
@@ -114,10 +116,12 @@ Cleanup kills only the process groups this run recorded (never by name), copies 
 
 ## Gotchas
 
-- **The app contract this harness assumes** (from PRD/ROUTES, not yet in code): the calculator island sets `data-ready="true"` on `<main>` after hydration; `GET /api/tldr` answers 405; the build reads `PUBLIC_TURNSTILE_SITE_KEY` and `PUBLIC_UMAMI_WEBSITE_ID`; the Worker reads `TURNSTILE_SECRET_KEY`. If the scaffold chooses other names, update `ctl` and this file in the same PR.
+- **The app contract verified by this harness** (from PRD/ROUTES and the running app): the calculator island sets `data-ready="true"` on `<main>` after hydration; `GET /api/tldr` answers 405; the build reads `PUBLIC_TURNSTILE_SITE_KEY` and `PUBLIC_UMAMI_WEBSITE_ID`; the Worker reads `TURNSTILE_SECRET_KEY`. If the scaffold chooses other names, update `ctl` and this file in the same PR.
 - **Workers AI is remote even in local dev.** Every "Gerar TL;DR" click is a real model call on the authenticated account. Generate at most once per run unless the journey needs more.
 - **Rate limit state is per run** (`--persist-to` inside the run dir), so 20/day never leaks between runs or into the user's own dev state.
 - **Turnstile test keys** always pass; the "challenge failed" path needs the always-fail secret `2x0000000000000000000000000000000AA` via `ABCALC_LAUNCH_CMD`.
 - **Bayesian numbers are deterministic** (seeded by the inputs, PRD seção 7). The same inputs must give the same P(vencer) on every run; a drift is a bug, not noise.
 - **Number formatting is per locale**: `/pt` shows `6,00%`, `/en` shows `6.00%`. Assert the locale you drove.
 - The full Chromium in `~/.cache/ms-playwright/chromium-1248` fails to start here (missing `libcups`, `libcairo`, `libpango`); the harness uses the headless shell. `ABCALC_CHROME` overrides the binary.
+
+- A valid local draft restores its active tab, even when the requested calculator path names the other tab. Clear the previous draft before direct navigation when a journey requires an empty page, or choose the desired header tab to preserve its data. A shared fragment keeps the tab from its own route.

@@ -149,7 +149,7 @@ No Modo A, o usuário escolhe qual semana do horizonte vira o plano (clique na l
 
 Quem acompanha o teste enquanto ele roda e decide parar ao ver significância está fazendo **peeking**, e isso infla a taxa de falsos positivos. O teste sequencial resolve isso de forma honesta: o usuário **planeja** quantas vezes vai olhar, e cada espiada tem uma **fronteira** mais exigente nas primeiras olhadas e mais próxima do z crítico normal no fim. Se o resultado cruza a fronteira, pode parar; se não, continua.
 
-Abordagem: **group sequential com função de gasto de alfa de Lan-DeMets tipo O'Brien-Fleming**: `α(t) = 2 − 2·Φ(z(1−α/2) / √t)` (bicaudal), onde `t` é a fração de informação (amostra atual / amostra máxima).
+Abordagem: **group sequential com função de gasto de alfa de Lan-DeMets tipo O'Brien-Fleming**: `α(t) = 2 − 2·Φ(z(1−α/2) / √t)` para um lado com erro total α, onde `t` é a fração de informação (amostra atual / amostra máxima). No bicaudal, cada lado usa essa função com α/2 (ver tabela de regras).
 
 ### Estrutura
 
@@ -179,7 +179,8 @@ Com 2+ espiadas, o pré-teste mostra:
 | Método compatível | Só Z test. Ligar o toggle com o método Bayesiano troca o método para Z test e mostra aviso explicando por quê |
 | Fronteiras | Calculadas no navegador por integração numérica recursiva (Armitage-McPherson-Rowe) a partir da função de gasto acima |
 | Fração de informação real | Usa a amostra real informada (`n atual / n máximo do plano`), não a planejada; isso mantém o alfa correto se a espiada atrasar ou adiantar |
-| Unicaudal | Mesma função de gasto com `z(1−α)` |
+| Bicaudal | Cada lado gasta metade do alfa com a sua própria função, `α_lado(t) = 2 − 2·Φ(z(1−α/4) / √t)` (convenção do gsDesign e do ldbounds; reproduz as fronteiras publicadas, ex.: 4,8769 … 2,0310 para 5 espiadas a 5%). Nota de escopo (21/10/2026): substituiu a leitura de alfa total dividido entre os lados |
+| Unicaudal | `α(t) = 2 − 2·Φ(z(1−α/2) / √t)` com α unicaudal, gasto só na fronteira superior; na última espiada o gasto soma exatamente α. Nota de escopo (21/10/2026): substituiu "mesma função com `z(1−α)`", que gastava 2α |
 | Bonferroni | Aplica-se ao alfa total antes de distribuir pelas espiadas |
 | Última espiada | Se a amostra atual ≥ amostra máxima, é a análise final: a fronteira é a da última espiada e o veredito segue as regras normais da seção 8 |
 
@@ -261,7 +262,7 @@ Para cada variante *v* contra o controle *c*:
 | p-value bicaudal | `2·(1 − Φ(|z|))` |
 | p-value unicaudal | `1 − Φ(z)` (hipótese: variante > controle) |
 | Significativo | `p-value < α'` (alfa efetivo da seção 2) |
-| Intervalo de confiança da diferença | `(CRv − CRc) ± z(1 − α'/2)·SEdiff` (bicaudal); unicaudal mostra só o limite inferior |
+| Intervalo de confiança da diferença | `(CRv − CRc) ± z(1 − α'/2)·SEdiff` (bicaudal); unicaudal mostra só o limite inferior, `(CRv − CRc) − z(1 − α')·SEdiff` (nota de escopo 21/10/2026: o z do unicaudal não tinha sido nomeado) |
 | IC do lift relativo | IC da diferença dividido por `CRc` (aproximação, indicada no detalhamento) |
 | Poder observado | `Φ(|z| − z crítico)` (exibido com a ressalva didática de que poder observado não substitui o planejamento) |
 
@@ -277,7 +278,7 @@ Para cada variante *v* contra o controle *c*:
 
 ### Modelo
 
-Cada grupo tem uma distribuição de crença sobre sua taxa de conversão real, atualizada com os dados. Responde direto à pergunta que o usuário tem: **"qual a probabilidade de a variante ser melhor que o controle?"** e **"quanto eu perco, em média, se implementar e estiver errado?"**.
+Cada grupo tem uma distribuição de crença sobre sua taxa de conversão real, atualizada com os dados. Responde direto à pergunta que o usuário tem: **"qual a probabilidade de a variante ser melhor que o controle?"** e **"quanto eu perco, em média, se implementar?"** (contando como zero os cenários em que a variante é melhor).
 
 ### Regras de cálculo
 
@@ -296,9 +297,11 @@ Cada grupo tem uma distribuição de crença sobre sua taxa de conversão real, 
 - O Bayesiano não aplica Bonferroni nem hipótese uni/bicaudal; os controles somem da interface quando ele está selecionado (ficam lembrados para quando o usuário voltar ao Z test).
 - O cálculo roda num **Web Worker** se passar do orçamento de 16 ms por recálculo (seção 18).
 
+> Nota (21/10/2026): o Node 24 (V8 com Maglev OSR, nodejs/node#66457) corrompia campos decimais de objetos montados na mesma função do laço Monte Carlo, dando números diferentes para a mesma entrada em cerca de 1 de cada 80 execuções. O motor mantém os laços quentes em funções separadas e o teste `src/stats/jit.test.ts` compara motores frios com o interpretador. O projeto exige Node 26.12 ou superior (`.nvmrc`).
+
 ### Edge cases
 
-- **Bayesiano e Z test discordam** (ex.: P(vencer) = 96% mas p-value = 0,06): não é bug, é esperado perto do limiar. Gera achado de regra informativo "métodos discordam" com explicação (seção 11).
+- **Bayesiano e Z test discordam** (ex.: P(vencer) = 96% mas p-value bicaudal = 0,08; nota de escopo 21/10/2026: o exemplo anterior, 0,06, não era coerente com 96%): não é bug, é esperado perto do limiar. Gera achado de regra informativo "métodos discordam" com explicação (seção 11).
 - **Amostras muito pequenas (< 30 usuários por grupo):** cálculo roda, mas o alerta de poucos dados dispara.
 - **Troca de método com TL;DR gerado:** TL;DR fica desatualizado (o resultado mostrado mudou).
 
@@ -335,7 +338,7 @@ Cada grupo tem uma distribuição de crença sobre sua taxa de conversão real, 
 | `under_7_days` | Dias de teste < 7 | Atenção | "O teste não cobriu um ciclo semanal completo." |
 | `incomplete_weeks` | Dias de teste ≥ 7 e não múltiplo de 7 | Info | "Semanas incompletas: considere fechar em <próximo múltiplo de 7> dias para equilibrar os dias da semana." |
 | `over_8_weeks` | Dias de teste > 56 | Atenção | "Testes longos sofrem com poluição de amostra (cookies apagados, sazonalidade)." |
-| `stopped_early` | Há plano (ou amostra necessária calculada), amostra atual < planejada, toggle sequencial desligado | Crítico | "Possível peeking: o teste parou antes da amostra planejada." |
+| `stopped_early` | Há plano vindo do pré-teste, amostra atual < planejada, toggle sequencial desligado (nota de escopo 21/10/2026: sem plano não dispara; com "amostra necessária calculada" ele dispararia em quase todo teste) | Crítico | "Possível peeking: o teste parou antes da amostra planejada." |
 | `underpowered` | Veredito "Inconclusiva, sem poder" | Atenção | "Amostra insuficiente para detectar o lift alvo de <X%>." |
 | `mde_high` | MDE atingido > 10% | Info | "Com esta amostra, só efeitos acima de <X%> seriam detectados." |
 | `bonferroni_off` | 3+ grupos e Bonferroni desligado | Atenção | "Sem correção para múltiplas comparações, a chance de falso positivo cresce." |
@@ -408,11 +411,13 @@ Depois que a análise é válida, o botão **"Gerar TL;DR"** pede à IA um resum
 
 | Bloco | Conteúdo |
 |---|---|
-| Contexto | idioma ativo, método, confiança, poder, hipótese, Bonferroni, sequencial (espiada e fronteira) |
+| Contexto | idioma ativo, método, confiança, poder, hipótese, Bonferroni |
 | Grupos | nome, usuários, conversões, CR, split pretendido |
-| Resultados | por variante: lift, p-value ou P(vencer), IC, risco esperado, veredito |
+| Resultados | por variante: lift, p-value, P(vencer), IC do método ativo, risco esperado, MDE atingido, veredito, e o estado sequencial (espiada, fronteira, z observado, cruzou) |
 | Duração e plano | dias, % de tráfego, amostra planejada, lift alvo de referência, dias adicionais |
-| Receita | contribuição mensal e impacto no horizonte (se houver) |
+| Receita | por variante: contribuição mensal e impacto no horizonte (se houver) |
+
+> Nota de escopo (21/10/2026): contrato v2 em `src/shared/tldr-contract.ts`. Números sem valor finito (intervalo aberto, MDE ou dias adicionais infinitos) viajam como `null`. Grupos podem ter ids não contíguos (A, B, D) para manter a cor de cada slot.
 | Achados das regras | lista de IDs com parâmetros (ex.: `srm` com p = 0,003) |
 | Turnstile | token de verificação |
 
@@ -488,7 +493,7 @@ Quando há dados, a explicação **usa os números do usuário** ("no seu teste,
 | MDE e tamanho de amostra | Pré-teste | Por que tráfego baixo só detecta efeitos grandes |
 | Uni vs bicaudal | Seletor de hipótese | O unicaudal não detecta pioras |
 | Bonferroni | Toggle | Múltiplas comparações e falso positivo |
-| Risco esperado | Resultado Bayesiano | "Quanto eu perco, em média, se estiver errado" |
+| Risco esperado | Resultado Bayesiano | "Quanto eu perco, em média, se implementar": `P(pior) × perda média quando pior`, não a perda dado que errei |
 | SRM | Alerta de SRM | Causas comuns (bots, redirect, cache, bucketing) |
 | Peeking e sequencial | Toggle "teste em andamento" e alerta `stopped_early` | Por que espiar infla o falso positivo; como as fronteiras resolvem |
 
@@ -556,7 +561,7 @@ O resultado é compartilhável por link, sem conta. Tudo o que está na tela vai
 - **Explicações só inline, escritas por gente:** o aprendizado acontece no momento da dúvida; texto didático gerado por IA não tem garantia de correção.
 - **Desktop-first:** analistas usam no notebook; o mobile funciona empilhado.
 - **Idiomas com prefixo de URL (`/pt`, `/en`):** cada idioma indexável, bom para SEO de um produto que quer crescer.
-- **Umami Cloud para analytics (substituiu Cloudflare Web Analytics em 20/10/2026):** escolha do dono do produto; versão hospedada porque self-hosted exigiria servidor próprio. O fragmento da URL nunca é enviado.
+- **Umami para analytics (substituiu Cloudflare Web Analytics em 20/10/2026):** escolha do dono do produto. Desde 21/10/2026 usa a instância do próprio dono (`umami.tarvos.cc`), que já existe fora deste produto; o produto continua sem servidor próprio. O fragmento da URL nunca é enviado.
 
 **Deliberadamente fora do v1:**
 
@@ -583,7 +588,7 @@ O produto é um **site estático** com um **único endpoint dinâmico**. O naveg
 | **Workers AI** | Modelo de linguagem que redige o TL;DR e os achados |
 | **Turnstile** | Verificação anti-bot antes de cada geração |
 | **Contador de limite diário** | Ponto a definir na seção 11 (proposta: Durable Object com contador por hash de IP, TTL 24 h) |
-| **Umami Cloud** | Pageviews e eventos anônimos de uso, sem cookie (seção 19). Serviço hospedado pelo Umami: não é servidor próprio |
+| **Umami (`umami.tarvos.cc`)** | Pageviews e eventos anônimos de uso, sem cookie (seção 19). Instância do dono, externa ao produto |
 
 ### Fluxo de dados
 
@@ -640,7 +645,9 @@ Requisito, não polimento.
 
 ### Modelo
 
-**Umami Cloud** (versão hospedada). O Umami self-hosted exigiria servidor e Postgres próprios, o que fere a restrição "zero servidor próprio" (seção 14). O script do Umami é carregado de forma assíncrona e mede pageviews (cada aba é uma rota, então a troca de aba já conta como pageview) e eventos personalizados via `umami.track`. Sem cookie.
+> Nota de escopo (21/10/2026): substituiu o Umami Cloud pela instância que o dono já mantém, `umami.tarvos.cc` (website id `b6e24c23-8f7b-4e52-bf87-b5b641d4f119`). O produto não ganha servidor: a instância existe e é operada fora dele.
+
+O script do Umami é carregado de forma assíncrona e mede pageviews (cada aba é uma rota, então a troca de aba já conta como pageview) e eventos personalizados via `umami.track`. Sem cookie.
 
 ### Regras
 
@@ -648,7 +655,8 @@ Requisito, não polimento.
 |---|---|
 | Fragmento da URL | **Nunca enviado ao Umami.** O fragmento `#s=...` carrega os números do teste; o tracker é configurado para excluir o hash (e a query string) da URL registrada. Verificar no lançamento, com o painel do Umami, que nenhuma URL registrada contém `#` |
 | Dados dos eventos | Só os campos da tabela abaixo; nenhum número do teste, nenhum nome de grupo, nenhum texto da IA |
-| Carregamento | Assíncrono, fora do caminho crítico; conta no orçamento de JS da seção 18 |
+| Carregamento | `defer`, fora do caminho crítico. O script remoto não entra na medição local do orçamento de JS da seção 18 |
+| Domínio | `data-domains=ab-test.iago.wtf`: dev, preview e verificação local nunca registram visitas |
 | Bloqueadores de anúncio | Aceito: se o script for bloqueado, a calculadora funciona igual |
 
 ### Eventos
@@ -672,4 +680,4 @@ Os eventos saem direto do navegador para o Umami; não passam pelo Worker.
 
 ### Pontos a definir
 
-- Domínio próprio para o script do Umami (proxy pelo Worker, para reduzir bloqueio por adblock) ou script padrão do Umami Cloud.
+- Proxy do script do Umami pelo Worker, para reduzir bloqueio por adblock. Hoje o script vem direto de `umami.tarvos.cc`.
