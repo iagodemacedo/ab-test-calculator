@@ -3,6 +3,8 @@
   "name": "ab-test-calculator",
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-01",
+  "routes": [{ "pattern": "ab-test.iago.wtf", "custom_domain": true }],
+  "workers_dev": false,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
