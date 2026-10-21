@@ -586,7 +586,7 @@ export function Stat({ label, value, note, hero = false }: StatProps) {
 - **Phosphor** via `unplugin-icons` + `@iconify-json/ph` (SVG inline no build)
 - **Gráficos em SVG próprio** (sem biblioteca)
 - **Turnstile** (widget da Cloudflare) só no momento de gerar o TL;DR
-- **Umami Cloud** (script assíncrono)
+- **Umami** da instância do dono (`umami.tarvos.cc`, script `defer`)
 
 ### Setup local
 

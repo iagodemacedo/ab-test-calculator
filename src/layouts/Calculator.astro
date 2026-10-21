@@ -12,6 +12,8 @@ const { locale, page } = Astro.props;
 const t = ui[locale];
 const other = otherLocale(locale);
 const umami = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID?.trim();
+const umamiSrc = import.meta.env.PUBLIC_UMAMI_SRC?.trim() || "https://umami.tarvos.cc/script.js";
+const umamiDomains = import.meta.env.PUBLIC_UMAMI_DOMAINS?.trim() || undefined;
 ---
 <!doctype html>
 <html lang={locale === 'pt' ? 'pt-BR' : 'en'}>
@@ -33,7 +35,7 @@ const umami = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID?.trim();
         document.documentElement.dataset.theme = saved === 'light' || saved === 'dark' ? saved : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       })();
     </script>
-    {umami && <script is:inline async src="https://cloud.umami.is/script.js" data-website-id={umami} data-exclude-hash="true" data-exclude-search="true" />}
+    {umami && <script is:inline defer src={umamiSrc} data-website-id={umami} data-domains={umamiDomains} data-exclude-hash="true" data-exclude-search="true" />}
   </head>
   <body>
     <header class="site-header">
