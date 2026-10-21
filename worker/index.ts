@@ -3,7 +3,7 @@ export { DailyLimit } from "./limits";
 
 export interface Env {
   ASSETS: Fetcher;
-  AI: Ai;
+  OPENROUTER_API_KEY: string;
   DAILY_LIMIT: DurableObjectNamespace;
   BURST_LIMIT: RateLimit;
   AI_MODEL: string;

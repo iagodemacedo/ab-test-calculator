@@ -1,6 +1,6 @@
 # AI TL;DR
 
-After a valid analysis, the user asks for a TL;DR: the Worker calls Workers AI with only the computed numbers and the rule findings, and the page renders a 2 to 4 sentence summary plus structured findings, each marked as coming from the rules or from the AI. Editing the data afterwards dims the summary with the seal "Dados mudaram". If the AI is unreachable, the page falls back to the rule findings with prewritten texts. Proves PRD section 11.
+After a valid analysis, the user asks for a TL;DR: the Worker sends the computed numbers, group names and rule findings through OpenRouter to Claude Haiku 5.5 (Anthropic), using only providers that do not store data, and the page renders a 2 to 4 sentence summary plus structured findings, each marked as coming from the rules or from the AI. Editing the data afterwards dims the summary with the seal "Dados mudaram". If the AI is unreachable, the page falls back to the rule findings with prewritten texts. Proves PRD section 11.
 
 ## Sub-features
 
@@ -19,7 +19,7 @@ After a valid analysis, the user asks for a TL;DR: the Worker calls Workers AI w
 
 Preconditions:
 
-- Baseline preconditions from the README hold, including `cloudflare auth` in doctor (the AI call is real).
+- Baseline preconditions from the README hold. Successful generation needs `OPENROUTER_API_KEY` set before launch and `openrouter key` PASS in doctor. Without a key, doctor reports SKIP and the real request proves fallback with `502 ai_failed`. No Cloudflare authentication is needed for local dev.
 - The analysis page holds the SRM fixture from [analysis.md](./analysis.md) (control 50000/1000, Variante B 48500/1000, 14 days), so at least one critical rule finding exists.
 
 - **Fallback first (no AI cost).** Run `ctl browser click --role button --name "Gerar TL;DR" --block /api/tldr --wait-text "TL;DR indisponível"`. The `TL;DR` region lists the rule findings with prewritten texts, starting with `Possível Sample Ratio Mismatch` marked `Crítico`.
@@ -35,4 +35,5 @@ Preconditions:
 - The AI text varies between runs. Assert structure (sentence count, findings present, severities, seals), never exact wording.
 - A 429 response means this run hit 20 generations; the run-scoped rate-limit state resets only with a new launch.
 - Turnstile test keys always pass; a visible challenge means the build did not pick up `PUBLIC_TURNSTILE_SITE_KEY`.
-- The model is not chosen yet (PRD section 11); record the model name from `app.log` with the evidence when it exists.
+- The configured model is `anthropic/claude-haiku-5.5`. Record `model` from a successful `/api/tldr` response with the evidence. OpenRouter may serve the model through Anthropic, Microsoft Azure, Google Cloud or AWS.
+- Without `OPENROUTER_API_KEY`, skip successful-generation and stale-summary checks. Verify the real `502 ai_failed` response and fallback instead. Never copy a real key into evidence or logs.

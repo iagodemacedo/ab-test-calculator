@@ -444,7 +444,7 @@ Todo achado de regra enviado precisa voltar na resposta (a IA explica, não desc
 |---|---|
 | Gatilho | Só pelo botão; nunca automático |
 | Pré-condição | Análise válida (pelo menos um veredito calculado) |
-| Provedor | **Workers AI** (Cloudflare), chamado pelo Worker |
+| Provedor | **OpenRouter** com o modelo `anthropic/claude-haiku-5.5` (configurado só em `vars.AI_MODEL`), chamado pelo Worker com JSON schema estrito, raciocínio desligado e `provider.data_collection: "deny"` (só provedores que não guardam dados; o OpenRouter pode servir o modelo pela Anthropic, Azure, Google Cloud ou AWS). Chave no segredo `OPENROUTER_API_KEY`. Nota de escopo (21/10/2026): substituiu o Workers AI |
 | Rate limit | **20 gerações por dia por IP** |
 | Anti-bot | **Turnstile** antes de cada chamada; token validado no Worker |
 | Persistência | Nenhuma no servidor: nem entrada, nem saída, nem cache |
@@ -465,7 +465,7 @@ Todo achado de regra enviado precisa voltar na resposta (a IA explica, não desc
 
 ### Pontos a definir
 
-- **Modelo do Workers AI:** decisão adiada pelo dono do produto (20/10/2026), a ser tomada depois. Critérios para a escolha: qualidade em PT-BR e EN, aderência a JSON schema e latência. O Worker deve isolar o nome do modelo numa configuração única para a troca ser trivial.
+- **Modelo:** decidido pelo dono em 21/10/2026, Claude Haiku 5.5 via OpenRouter. Custo medido numa chamada pequena: US$ 0,0000636; um TL;DR completo fica perto de US$ 0,0004 (estimativa). O Workers AI com `llama-3.3-70b` cabia só uns 70 TL;DR por dia na cota grátis da conta inteira.
 - **Implementação do limite diário:** o binding de Rate Limiting dos Workers só trabalha com janelas curtas (10 ou 60 s), então "20 por dia" precisa de um contador próprio (proposta: Durable Object com chave = hash do IP e expiração em 24 h; guarda só o contador, nunca dados do teste). Usar o binding de Rate Limiting por cima, para rajadas.
 
 ## 12. Explicações didáticas
@@ -553,7 +553,7 @@ O resultado é compartilhável por link, sem conta. Tudo o que está na tela vai
 - **Problemas detectados por regras + IA:** as regras garantem o básico de forma determinística; a IA acrescenta leitura de contexto, sempre marcada.
 - **Só as regras definem um achado como crítico:** a IA vai no máximo até "atenção". O alarme mais alto fica reservado ao que é verificável por conta.
 - **IA só por botão, com Turnstile e 20 por dia por IP:** controla custo e abuso sem conta de usuário.
-- **Workers AI em vez de API externa:** tudo dentro da Cloudflare, sem chave de terceiros, coerente com "menor infraestrutura possível".
+- **OpenRouter com Claude Haiku 5.5 em vez do Workers AI (21/10/2026, substituiu a decisão de 20/10/2026):** a cota grátis do Workers AI comportava uns 70 TL;DR por dia na conta inteira com o modelo provisório, e o Haiku escreve melhor em português e segue o JSON. Continua sem servidor próprio; o custo passa a ser por chamada (perto de US$ 0,0004) e os números do TL;DR passam por OpenRouter e por provedores que não guardam dados.
 - **IA recebe só números:** nada de texto livre do usuário; reduz risco de vazamento de informação sensível e de prompt injection.
 - **Sem cache de respostas da IA:** cache seria persistência de dados do teste, o que fere a restrição.
 - **TL;DR vai no link compartilhado:** reproduz exatamente o que foi visto, sem gastar IA de novo.
@@ -584,8 +584,8 @@ O produto é um **site estático** com um **único endpoint dinâmico**. O naveg
 |---|---|
 | **Cloudflare Workers + Static Assets** | Serve o HTML, CSS, JS e fontes pré-gerados para `/pt` e `/en`. Redireciona `/` para o idioma detectado |
 | **Motor estatístico (no navegador)** | Módulo puro, sem dependência de UI: pré-teste, Z test, Bayesiano, sequencial, SRM, regras de achados. Testável isoladamente. Pode rodar num Web Worker |
-| **Worker `/api/tldr`** | Valida o Turnstile, aplica rate limit, monta o prompt com o payload, chama o Workers AI, valida o JSON, responde. Sem estado de dados |
-| **Workers AI** | Modelo de linguagem que redige o TL;DR e os achados |
+| **Worker `/api/tldr`** | Valida o Turnstile, aplica rate limit, monta o prompt com o payload, chama o OpenRouter, valida o JSON, responde. Sem estado de dados |
+| **OpenRouter + Claude Haiku 5.5** | Modelo de linguagem que redige o TL;DR e os achados. Só provedores que não guardam dados (`data_collection: deny`) |
 | **Turnstile** | Verificação anti-bot antes de cada geração |
 | **Contador de limite diário** | Ponto a definir na seção 11 (proposta: Durable Object com contador por hash de IP, TTL 24 h) |
 | **Umami (`umami.tarvos.cc`)** | Pageviews e eventos anônimos de uso, sem cookie (seção 19). Instância do dono, externa ao produto |
@@ -595,7 +595,7 @@ O produto é um **site estático** com um **único endpoint dinâmico**. O naveg
 1. Usuário digita → motor estatístico recalcula no navegador → UI atualiza.
 2. Estado → serializado no fragmento da URL e no `localStorage`.
 3. Usuário clica "Gerar TL;DR" → Turnstile emite token → navegador envia payload numérico para `/api/tldr`.
-4. Worker valida token e limite → chama Workers AI → valida JSON → devolve. Nada é gravado.
+4. Worker valida token e limite → chama o OpenRouter → valida JSON → devolve. Nada é gravado no Worker.
 5. Navegador renderiza o TL;DR, guarda junto do hash dos inputs, atualiza a URL.
 
 Não há dados externos nem rotinas de sincronização.

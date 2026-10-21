@@ -22,7 +22,8 @@ What it does (mode `app`):
 1. Picks two free ports on 127.0.0.1 (app and Chrome DevTools), so runs never collide.
 2. Installs deps with the repo's package manager (`pnpm` if `pnpm-lock.yaml` exists, else `npm`). **pnpm is not installed on this machine**: run `corepack enable` once if the repo adopts pnpm.
 3. Builds with `PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA` (Cloudflare test key, always passes) and `PUBLIC_UMAMI_WEBSITE_ID` empty (no analytics from verification runs) unless `ABCALC_UMAMI_WEBSITE_ID` is set.
-4. Starts `npx wrangler dev --ip 127.0.0.1 --port <app> --persist-to <run>/wrangler --var TURNSTILE_SECRET_KEY:1x0000000000000000000000000000000AA` in its own process group. Override the whole command with `ABCALC_LAUNCH_CMD` if the scaffold needs something else. Verified against `wrangler.jsonc`: static Astro pages and the Worker share this server. `cf dev` was not used because it runs the framework dev server and does not forward `--port`.
+4. Starts `npx --loglevel error wrangler dev --ip 127.0.0.1 --port <app> --persist-to <run>/wrangler --log-level warn --var TURNSTILE_SECRET_KEY:1x0000000000000000000000000000000AA` in its own process group. Override the whole command with `ABCALC_LAUNCH_CMD` if the scaffold needs something else. Verified against `wrangler.jsonc`: static Astro pages and the Worker share this server. `cf dev` was not used because it runs the framework dev server and does not forward `--port`.
+   If `OPENROUTER_API_KEY` is set, adds `--var OPENROUTER_API_KEY:$OPENROUTER_API_KEY` without printing its value. npm notices and Wrangler's variable dump are suppressed. Local dev needs no Cloudflare authentication.
 5. Ready = `GET /pt/analise` (redirects followed) returns HTML containing `AB Test Calculator`, within 180 s (`ABCALC_READY_TIMEOUT`). In the browser, `ctl browser goto` additionally waits for `main[data-ready="true"]`, the hydration marker the calculator island must set (contract, see Gotchas). On failure, launch prints the log tail and cleans up its own processes.
 
 There is no seed data and no database: every journey starts from an empty page, and state lives in the URL fragment and `localStorage` of this run's private Chrome profile.
@@ -44,7 +45,7 @@ Run first, and again whenever anything looks off. Read-only.
 | page /pt/analise, /en/analysis | both locales answer 200 |
 | build revision | HEAD still equals the commit built at launch (relaunch if not) |
 | api /api/tldr route | `GET /api/tldr` answers 405, proving the Worker route exists without calling the AI. Verified contract |
-| cloudflare auth | `cf auth whoami` reports a valid token (the Workers AI binding always runs remotely, even in local dev) |
+| openrouter key | `OPENROUTER_API_KEY` is set. Otherwise SKIP, and TL;DR falls back to rule findings |
 | browser (CDP) | the run's Chromium answers on its DevTools port |
 
 Never drive an instance whose doctor fails, and never drive an instance this run did not launch.
@@ -117,7 +118,7 @@ Cleanup kills only the process groups this run recorded (never by name), copies 
 ## Gotchas
 
 - **The app contract verified by this harness** (from PRD/ROUTES and the running app): the calculator island sets `data-ready="true"` on `<main>` after hydration; `GET /api/tldr` answers 405; the build reads `PUBLIC_TURNSTILE_SITE_KEY` and `PUBLIC_UMAMI_WEBSITE_ID`; the Worker reads `TURNSTILE_SECRET_KEY`. If the scaffold chooses other names, update `ctl` and this file in the same PR.
-- **Workers AI is remote even in local dev.** Every "Gerar TL;DR" click is a real model call on the authenticated account. Generate at most once per run unless the journey needs more.
+- **OpenRouter calls are real in local dev.** Set `OPENROUTER_API_KEY` before launch to generate with `anthropic/claude-haiku-5.5`. Generate at most once per run unless the journey needs more. Without a key, the request returns `502 ai_failed` and the UI falls back to rule findings. The Worker routes only to providers that do not store data.
 - **Rate limit state is per run** (`--persist-to` inside the run dir), so 20/day never leaks between runs or into the user's own dev state.
 - **Turnstile test keys** always pass; the "challenge failed" path needs the always-fail secret `2x0000000000000000000000000000000AA` via `ABCALC_LAUNCH_CMD`.
 - **Bayesian numbers are deterministic** (seeded by the inputs, PRD seção 7). The same inputs must give the same P(vencer) on every run; a drift is a bug, not noise.

@@ -1,9 +1,10 @@
 import type { TldrError, TldrErrorCode, TldrResponse } from "../src/shared/tldr-contract";
 import type { Env } from "./index";
 import { hashIp } from "./limits";
+import { requestOpenRouter } from "./openrouter";
 import { isRecord, readTldrRequest } from "./payload";
 import { buildMessages } from "./prompt";
-import { parseModelOutput, TLDR_RESPONSE_SCHEMA } from "./response";
+import { parseModelOutput } from "./response";
 
 function json(body: TldrError | TldrResponse, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: {
@@ -31,6 +32,7 @@ export async function handleTldr(request: Request, env: Env): Promise<Response> 
   const ip = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
   if (!await verifyTurnstile(req.turnstileToken, ip, env.TURNSTILE_SECRET_KEY)) return error("turnstile_failed", 403);
   let timer: ReturnType<typeof setTimeout> | undefined;
+  const controller = new AbortController();
   try {
     const key = await hashIp(ip);
     if (!(await env.BURST_LIMIT.limit({ key })).success) return error("burst_limit", 429);
@@ -40,18 +42,19 @@ export async function handleTldr(request: Request, env: Env): Promise<Response> 
     if (!daily.ok) return error("ai_failed", 502);
     const messages = buildMessages(req);
     const timeout = Symbol("ai-timeout");
-    const deadline = new Promise<typeof timeout>(resolve => { timer = setTimeout(() => resolve(timeout), 20_000); });
+    const deadline = new Promise<typeof timeout>(resolve => {
+      timer = setTimeout(() => { controller.abort(); resolve(timeout); }, 20_000);
+    });
     for (let attempt = 0; attempt < 2; attempt++) {
       const output = await Promise.race([
-        env.AI.run(env.AI_MODEL, { messages, response_format: { type: "json_schema", json_schema: TLDR_RESPONSE_SCHEMA }, max_tokens: 1200 }),
+        requestOpenRouter(env, messages, controller.signal),
         deadline,
       ]);
       if (output === timeout) return error("ai_timeout", 504);
-      const raw = isRecord(output) && "response" in output ? output.response : output;
-      const response = parseModelOutput(raw, req);
+      const response = parseModelOutput(output, req);
       if (response) return json({ ...response, model: env.AI_MODEL }, 200);
     }
     return error("ai_failed", 502);
-  } catch { return error("ai_failed", 502); }
+  } catch { return controller.signal.aborted ? error("ai_timeout", 504) : error("ai_failed", 502); }
   finally { if (timer !== undefined) clearTimeout(timer); }
 }
