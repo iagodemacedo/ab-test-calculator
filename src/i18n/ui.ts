@@ -13,7 +13,7 @@ const pt = {
   theme: "Alternar tema",
   share: "Salvar e compartilhar link",
   privacy:
-    "Nada do que você digita é gravado no servidor. Só os números e nomes dos grupos vão para a IA quando você pede o TL;DR.",
+    "Nada do que você digita é gravado no servidor. Só quando você pede o TL;DR, os números e nomes dos grupos passam pelo OpenRouter para o modelo Claude Haiku 5.5 (Anthropic). O OpenRouter pode servir o modelo pela Anthropic, Microsoft Azure, Google Cloud ou AWS, apenas por provedores que não armazenam dados.",
   clear: "Limpar",
   example: "Preencher com dados de exemplo",
   duration: "1. Duração do teste",
@@ -200,7 +200,7 @@ const pt = {
   browserText:
     "Toda a estatística roda num Web Worker no navegador. Inputs, plano e TL;DR ficam no fragmento do link e no rascunho local. Não persistem no servidor.",
   aiText:
-    "Só ao clicar em Gerar TL;DR, os números calculados, nomes de grupos com até 40 caracteres e o token Turnstile passam pelo Worker e pelo Workers AI. Sem cache nem gravação de entrada ou saída. Limite de 20 resumos por dia por IP e timeout de 20 segundos.",
+    "Só ao clicar em Gerar TL;DR, os números calculados e nomes de grupos com até 40 caracteres passam pelo Worker e pelo OpenRouter para o modelo Claude Haiku 5.5 (Anthropic). O OpenRouter pode servir o modelo pela Anthropic, Microsoft Azure, Google Cloud ou AWS, apenas por provedores que não armazenam dados. O token Turnstile é usado apenas na verificação anti-bot da Cloudflare. Sem cache nem gravação de entrada ou saída. Limite de 20 resumos por dia por IP e timeout de 20 segundos.",
   analyticsText:
     "O Umami Cloud coleta páginas e eventos anônimos de uso sem cookies. URLs excluem fragmento e busca. Eventos só incluem opções de interface, nunca números do teste, nomes de grupos ou texto da IA.",
   references: "Referências",
@@ -223,7 +223,7 @@ const en: Catalog = {
   theme: "Toggle theme",
   share: "Save and share link",
   privacy:
-    "Nothing you type is stored on the server. Only numbers and group names go to AI when you request a TL;DR.",
+    "Nothing you type is stored on the server. Only when you request a TL;DR do numbers and group names pass through OpenRouter to the Claude Haiku 5.5 model (Anthropic). OpenRouter may serve the model through Anthropic, Microsoft Azure, Google Cloud or AWS, using only providers that do not store data.",
   clear: "Clear",
   example: "Fill with example data",
   duration: "1. Test duration",
@@ -408,7 +408,7 @@ const en: Catalog = {
   browserText:
     "All statistics run in a Web Worker in your browser. Inputs, plans and TL;DR live in the link fragment and local draft. They are not stored on the server.",
   aiText:
-    "Only when you click Generate TL;DR do the computed numbers, group names up to 40 characters and Turnstile token pass through the Worker and Workers AI. No caching or storage of input or output. Limit of 20 summaries per day per IP and a 20-second timeout.",
+    "Only when you click Generate TL;DR do computed numbers and group names up to 40 characters pass through the Worker and OpenRouter to the Claude Haiku 5.5 model (Anthropic). OpenRouter may serve the model through Anthropic, Microsoft Azure, Google Cloud or AWS, using only providers that do not store data. The Turnstile token is used only for Cloudflare's anti-bot verification. No caching or storage of input or output. Limit of 20 summaries per day per IP and a 20-second timeout.",
   analyticsText:
     "Umami Cloud collects anonymous pageviews and usage events without cookies. URLs exclude fragments and query strings. Events include interface choices only, never test numbers, group names or AI text.",
   references: "References",
