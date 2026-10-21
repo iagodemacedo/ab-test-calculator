@@ -74,7 +74,7 @@ Abertos de qualquer tela, sem mudar de rota.
 
 | Rota | Descrição |
 |---|---|
-| `POST /api/tldr` | Recebe o payload numérico e o token Turnstile, aplica o limite de 20 por dia por IP, chama o Workers AI, valida e devolve o JSON (PRD seção 11). Respostas: 200 com o JSON, 400 payload inválido, 403 Turnstile inválido, 429 limite atingido, 502/504 falha ou timeout da IA. Nada é gravado |
+| `POST /api/tldr` | Recebe o payload numérico e o token Turnstile, aplica o limite de 20 por dia por IP, chama o OpenRouter (Claude Haiku 5.5), valida e devolve o JSON (PRD seção 11). Respostas: 200 com o JSON, 400 payload inválido, 403 Turnstile inválido, 429 limite atingido, 502/504 falha ou timeout da IA. Nada é gravado |
 
 ## Erro
 

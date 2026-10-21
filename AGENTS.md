@@ -12,8 +12,8 @@ Nenhuma feature se implementa sem ler a seção correspondente do PRD. Nenhuma t
 
 ## 2. Restrições invioláveis
 
-1. **Zero servidor próprio.** Só Cloudflare (Workers, Static Assets e primitivas da plataforma) e serviços externos já aprovados no PRD (a instância Umami do dono, `umami.tarvos.cc`). Nada de VPS, container ou banco gerenciado.
-2. **Dados do teste não persistem no servidor.** Os números do usuário nunca são gravados, logados ou cacheados no servidor. Só passam pelo Worker no momento do TL;DR. O fragmento da URL (`#s=...`) nunca é enviado a nenhum serviço, inclusive o Umami.
+1. **Zero servidor próprio.** Só Cloudflare (Workers, Static Assets e primitivas da plataforma) e serviços externos já aprovados no PRD (a instância Umami do dono, `umami.tarvos.cc`, e o OpenRouter para o TL;DR). Nada de VPS, container ou banco gerenciado.
+2. **Dados do teste não persistem no servidor.** Os números do usuário nunca são gravados, logados ou cacheados no servidor. Só passam pelo Worker e pelo OpenRouter no momento do TL;DR, sempre com `provider.data_collection: "deny"`. O fragmento da URL (`#s=...`) nunca é enviado a nenhum serviço, inclusive o Umami.
 3. **Estatística 100% no navegador.** Nenhum cálculo estatístico depende da rede ou da IA. A IA só interpreta números já calculados pelo motor em `src/stats/`.
 
 Se uma tarefa pedida conflitar com qualquer item desta lista, pare e aponte o conflito em vez de executar.
