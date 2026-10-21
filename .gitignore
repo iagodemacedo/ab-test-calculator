@@ -1,7 +1,7 @@
 # Verification evidence (kept locally, not versioned)
 artifacts/
 # Verification harness dependencies
-.claude/skills/verify-ab-test-calculator/scripts/node_modules/
+.claude/skills/verify-ab-test-calculator/scripts/node_modules
 node_modules/
 dist/
 .astro/

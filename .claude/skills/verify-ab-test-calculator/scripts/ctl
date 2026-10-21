@@ -83,9 +83,12 @@ cmd_launch() {
       if [[ -n "${ABCALC_LAUNCH_CMD:-}" ]]; then
         exec setsid bash -c "$ABCALC_LAUNCH_CMD"
       fi
+      # The key goes through a mode-600 file in this run's state dir, never on the command line
+      # (which ps and npm would expose). cleanup removes the state dir.
       openrouter_args=()
       if [[ -n "${OPENROUTER_API_KEY:-}" ]]; then
-        openrouter_args+=(--var "OPENROUTER_API_KEY:$OPENROUTER_API_KEY")
+        (umask 077; printf 'OPENROUTER_API_KEY=%s\n' "$OPENROUTER_API_KEY" >"$STATE/secrets.env")
+        openrouter_args+=(--env-file "$STATE/secrets.env")
       fi
       exec setsid npx --loglevel error wrangler dev --ip 127.0.0.1 --port "$APP_PORT" --persist-to "$STATE/wrangler" \
         --log-level warn --var "TURNSTILE_SECRET_KEY:$TURNSTILE_TEST_SECRET_KEY" "${openrouter_args[@]}"
