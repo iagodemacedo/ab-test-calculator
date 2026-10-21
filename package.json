@@ -9,7 +9,8 @@
     "typecheck": "astro check && tsc -p worker/tsconfig.json --noEmit",
     "preview": "astro build && wrangler dev",
     "reference": "python3 scripts/reference/generate.py > src/stats/__fixtures__/reference.json",
-    "budget": "node scripts/js-budget.mjs"
+    "budget": "node scripts/js-budget.mjs",
+    "deploy": "bash scripts/deploy.sh"
   },
   "dependencies": {
     "@astrojs/preact": "^5.1.5",
